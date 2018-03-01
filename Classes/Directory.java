@@ -1,5 +1,6 @@
 
 public class Directory {
+	
    private static int maxChars = 30; // max characters of each file name
 
    // Directory entries
@@ -7,9 +8,12 @@ public class Directory {
    private char fnames[][];    // each element stores a different file name.
 
    public Directory( int maxInumber ) { // directory constructor
+   
       fsizes = new int[maxInumber];     // maxInumber = max files
+	  
       for ( int i = 0; i < maxInumber; i++ ) 
          fsize[i] = 0;                 // all file size initialized to 0
+	 
       fnames = new char[maxInumber][maxChars];
       String root = "/";                // entry(inode) 0 is "/"
       fsize[0] = root.length( );        // fsize[0] is the size of "/".

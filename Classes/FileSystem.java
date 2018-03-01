@@ -8,6 +8,92 @@ This class details the file system for ThreadOS
 
 public class FileSystem {
 
-	//instance variables and methods
-
+	private SuperBlock superblock;
+	private Directory directory;
+	private FileStructureTable filetable;
+	
+	public FileSystem( int diskBlocks ) {
+		superblock = new SuperBlock( diskBlocks );
+		directory = new Directory ( superblock.totalInodes );
+		filetable = new FileStructureTable( directory );
+		
+		//read the "/" file from diskBlocks
+		FileTableEntry dirEnt = SysLib.open( "/", "r" );
+		int dirSize = fsize( dirEnt );
+		if(dirSize > 0 ) {
+			// the directory has some data.
+			byte[] dirData = new byte[dirSize];
+			SysLib.read( dirEnt, dirData );
+			directory.bytes2directory( dirData );
+		}
+		SysLib.close( dirEnt );
+	}
+	
+	void sync() {
+		
+		//TODO: implement
+		
+	}
+	
+	boolean format( int files ) {
+		
+		//TODO: implement
+		
+	}
+	
+	FileTableEntry open( String filename, String mode ) {
+		
+		FileTableEntry ftEnt = filetable.falloc( filename, mode );
+		if( mode.equals( "w" ) {
+			if( deallocAllBlocks( ftEnt ) == false ) //TODO: implement deallocAllBlocks
+				return null;
+		}
+		return ftEnt;
+	}
+	
+	boolean close( FileTableEntry ftEnt ) {
+		
+		//TODO: implement
+	
+	}
+	
+	int read( FileTableEntry ftEnt, byte[] buffer ) {
+		
+		//TODO: implement
+		
+	}
+	
+	int write( FileTableEntry ftEnt, byte[] buffer ) {
+		
+		//TODO: implement
+		
+	}
+	
+	int fsize( FileTableEntry ftEnt ) {
+		
+		//TODO: implement
+		
+	}
+	
+	private boolean deallocAllBlocks( FileTableEntry ftEnt ) {
+		
+		//TODO: implement
+		
+	}
+	
+	boolean delete( String filename ) {
+		
+		//TODO: implement
+		
+	}
+	
+	private final int SEEK_SET = 0;
+	private final int SEEK_CUR = 1;
+	private final int SEEK_END = 2;
+	
+	int seek( FileTableEntry ftEnt, int offset, int whence ) {
+		
+		//TODO: implement
+		
+	}
 }
