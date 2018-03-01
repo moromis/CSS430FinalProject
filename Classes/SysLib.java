@@ -127,7 +127,7 @@ public class SysLib {
         if (files < 1) {
             return -1;
         }
-        return -1;
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.FORMAT, files, null);
     }
 
     /**This method opens the specified file in the specified mode.
@@ -135,19 +135,30 @@ public class SysLib {
     The file descriptor will be in the range of 3 to 31.
     The mode will be one of the following:
 
-    "r" for read only
-    "w" for write only
-    "w+" for read and write only
-    "a" for append mode
+    "r" = 0 for read only
+    "w" = 1 for write only
+    "w+" = 2 for read and write only
+    "a" = 3 for append mode
 
     @param fileName : The name of the file to be opened or created.
     @param mode : The permissions for users to access the file.
     @return int : The file descriptor of the file or -1 for error.*/
     public static int open(String fileName, String mode) {
-        if (!(mode.equals("r") || mode.equals("w") || mode.equals("w+") || mode.equals("a"))) {
+        int modeNumber = -1;
+
+        if (mode.equals("r")) {
+            modeNumber = 0;
+        } else if (mode.equals("w")) {
+            modeNumber = 1;
+        } else if (mode.equals("w+")) {
+            modeNumber = 2;
+        } else if (mode.equals("a")) {
+            modeNumber = 3;
+        } else {
             return -1;
         }
-        return -1;
+
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.OPEN, modeNumber, fileName);
     }
 
     /**This method reads up to the size of buffer's bytes from the file and
@@ -156,7 +167,10 @@ public class SysLib {
     @param buffer : The characters read from the file.
     @return int : The number of bytes read or -1 on error.*/
     public static int read(int fd, byte[] buffer) {
-        //
+        if (fd < 3 || fd > 31) {
+            return -1;
+        }
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.RAWREAD, fd, buffer);
     }
 
     /**This method writes the contents of a buffer to the specified file.
@@ -165,7 +179,11 @@ public class SysLib {
     @param buffer : The characters to be written to the file.
     @return int : The number of bytes read or -1 on error.*/
     public static int write(int fd, byte[] buffer) {
-        //
+        if (fd < 3 || fd > 31) {
+            return -1;
+        }
+
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.RAWWRITE, fd, buffer);
     }
 
     /**This method sets the seek pointer in the specified file to the
@@ -175,7 +193,13 @@ public class SysLib {
     @param whence : Where the offset starts from.
     @return int : The offset of the seek pointer.*/
     public static int seek(int fd, int offset, int whence) {
-        //
+        if (fd < 3 || fd > 31) {
+            return -1;
+        }
+
+        int[] args = {offset, whence};
+
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.SEEK, fd, args);
     }
 
     /**This method closes the specified file and removes the pointers from
@@ -184,21 +208,29 @@ public class SysLib {
     @return boolean : true is returned if the file successfully closes, else false
     is returned.*/
     public static int close(int fd) {
-        //
+        if (fd < 3 || fd > 31) {
+            return -1;
+        }
+
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.CLOSE, fd, null);
     }
 
     /**This method deletes the specified file and frees the blocks used by it.
     @param fileName : The file to be deleted.
     @return boolean : true if the file was successfully deleted otherwise false.*/
     public static int delete(String fileName) {
-        //
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.DELETE, 0, fileName);
     }
 
     /**This method returns the size in bytes of the specified file.
     @param fd : The file whose size should be returned.
     @return int : The size of the file.*/
     public static int fsize(int fd) {
-        //
+        if (fd < 3 || fd > 31) {
+            return -1;
+        }
+
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.SIZE, fd, null);
     }
 
 }
