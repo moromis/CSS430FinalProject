@@ -123,10 +123,12 @@ public class SysLib {
     @return int : If the allocation is successful, 0 is returned
     else -1 is returned.*/
     public static int format(int files) {
-        //invalid number of files
-        if (files < 1) {
+        //invalid number of files so throw an error
+        if (files < 0) {
             return -1;
         }
+
+        //Return the result of Kernel.FORMAT
         return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.FORMAT, files, null);
     }
 
@@ -144,21 +146,10 @@ public class SysLib {
     @param mode : The permissions for users to access the file.
     @return int : The file descriptor of the file or -1 for error.*/
     public static int open(String fileName, String mode) {
-        int modeNumber = -1;
+        //List the arguments as an array
+        String[] args = {fileName, mode};
 
-        if (mode.equals("r")) {
-            modeNumber = 0;
-        } else if (mode.equals("w")) {
-            modeNumber = 1;
-        } else if (mode.equals("w+")) {
-            modeNumber = 2;
-        } else if (mode.equals("a")) {
-            modeNumber = 3;
-        } else {
-            return -1;
-        }
-
-        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.OPEN, modeNumber, fileName);
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.OPEN, 0, args);
     }
 
     /**This method reads up to the size of buffer's bytes from the file and
@@ -167,10 +158,11 @@ public class SysLib {
     @param buffer : The characters read from the file.
     @return int : The number of bytes read or -1 on error.*/
     public static int read(int fd, byte[] buffer) {
+        //invalid file descriptor
         if (fd < 3 || fd > 31) {
             return -1;
         }
-        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.RAWREAD, fd, buffer);
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.READBUF, fd, buffer);
     }
 
     /**This method writes the contents of a buffer to the specified file.
@@ -179,11 +171,12 @@ public class SysLib {
     @param buffer : The characters to be written to the file.
     @return int : The number of bytes read or -1 on error.*/
     public static int write(int fd, byte[] buffer) {
+        //invalid file descriptors
         if (fd < 3 || fd > 31) {
             return -1;
         }
 
-        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.RAWWRITE, fd, buffer);
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.WRITEBUF, fd, buffer);
     }
 
     /**This method sets the seek pointer in the specified file to the
@@ -193,10 +186,12 @@ public class SysLib {
     @param whence : Where the offset starts from.
     @return int : The offset of the seek pointer.*/
     public static int seek(int fd, int offset, int whence) {
+        //invalid file descriptor
         if (fd < 3 || fd > 31) {
             return -1;
         }
 
+        //Create the integer array of arguments to be passed to Kernel
         int[] args = {offset, whence};
 
         return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.SEEK, fd, args);
@@ -208,6 +203,7 @@ public class SysLib {
     @return boolean : true is returned if the file successfully closes, else false
     is returned.*/
     public static int close(int fd) {
+        //invalid file descriptor
         if (fd < 3 || fd > 31) {
             return -1;
         }
@@ -226,6 +222,7 @@ public class SysLib {
     @param fd : The file whose size should be returned.
     @return int : The size of the file.*/
     public static int fsize(int fd) {
+        //Invalid file descriptors
         if (fd < 3 || fd > 31) {
             return -1;
         }
