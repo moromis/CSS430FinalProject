@@ -130,58 +130,73 @@ public class SysLib {
         return -1;
     }
 
-    /**Preconditions:
-    Postconditions:
-    @param
-    @return int : */
+    /**This method opens the specified file in the specified mode.
+    Additionally, this file allocates a new file descriptor and returns it.
+    The file descriptor will be in the range of 3 to 31.
+    The mode will be one of the following:
+
+    "r" for read only
+    "w" for write only
+    "w+" for read and write only
+    "a" for append mode
+
+    @param fileName : The name of the file to be opened or created.
+    @param mode : The permissions for users to access the file.
+    @return int : The file descriptor of the file or -1 for error.*/
     public static int open(String fileName, String mode) {
+        if (!(mode.equals("r") || mode.equals("w") || mode.equals("w+") || mode.equals("a"))) {
+            return -1;
+        }
         return -1;
     }
 
-    /**Preconditions:
-    Postconditions:
-    @param
-    @return int : */
-    public static int read(int fd, byte buffer[]) {
+    /**This method reads up to the size of buffer's bytes from the file and
+    returns the number of bytes read.
+    @param fd : The file to be read from.
+    @param buffer : The characters read from the file.
+    @return int : The number of bytes read or -1 on error.*/
+    public static int read(int fd, byte[] buffer) {
         return -1;
     }
 
-    /**Preconditions:
-    Postconditions:
-    @param
-    @return int : */
-    public static int write(int fd, byte buffer[]) {
+    /**This method writes the contents of a buffer to the specified file.
+    The number of bytes that were read is returned.
+    @param fd : The file to be written to.
+    @param buffer : The characters to be written to the file.
+    @return int : The number of bytes read or -1 on error.*/
+    public static int write(int fd, byte[] buffer) {
         return -1;
     }
 
-    /**Preconditions:
-    Postconditions:
-    @param
-    @return int : */
+    /**This method sets the seek pointer in the specified file to the
+    specified offset. The offset of the seek pointer is returned.
+    @param fd : The file who's seek pointer is being modified.
+    @param offset : The amount of offset from the whence position.
+    @param whence : Where the offset starts from.
+    @return int : The offset of the seek pointer.*/
     public static int seek(int fd, int offset, int whence) {
         return -1;
     }
 
-    /**Preconditions:
-    Postconditions:
-    @param
-    @return int : */
+    /**This method closes the specified file and removes the pointers from
+    the file descriptor table.
+    @param fd : The file being closed.
+    @return int : 0 is returned if the file successfully closes, else -1
+    is returned.*/
     public static int close(int fd) {
         return -1;
     }
 
-    /**Preconditions:
-    Postconditions:
-    @param
-    @return int : */
+    /**This method deletes the specified file and frees the blocks used by it.
+    @param fileName : The file to be deleted.
+    @return int : 0 if the file was successfully deleted otherwise -1.*/
     public static int delete(String fileName) {
         return -1;
     }
 
-    /**Preconditions:
-    Postconditions:
-    @param
-    @return int : */
+    /**This method returns the size in bytes of the specified file.
+    @param fd : The file whose size should be returned.
+    @return int : The size of the file.*/
     public static int fsize(int fd) {
         return -1;
     }
