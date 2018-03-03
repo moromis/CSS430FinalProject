@@ -52,7 +52,7 @@ public class Directory {
 	  
 	  //TODO: allocate an inode number? how to do?
 	  //from slides: create new inode: check if there's a free inode and assign it to the file,
-	  //return inode number, otherwise return error
+	  //return inode number, otherwise return error (-1)
    }
 
    public boolean ifree( short iNumber ) {
@@ -68,5 +68,7 @@ public class Directory {
 
    public short namei( String filename ) {
       // returns the inumber corresponding to this filename
+	  
+	  //return -1 if no inode is associated with the filename - can happen
    }
 }
