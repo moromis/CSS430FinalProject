@@ -51,6 +51,8 @@ public class Directory {
       // deallocates this inumber (inode number)
       // the corresponding file will be deleted.
 	  
+	  if(iNumber == 0) return false; //don't ever free the root directory
+	  
 	  String thefilename = "";	//TODO get the file name
 	  SysLib.delete(thefilename);
    }
