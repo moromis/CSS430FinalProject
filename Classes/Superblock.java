@@ -1,4 +1,4 @@
-/**Superblock.java
+/**SuperBlock.java
 
 This file creates a superblock that details the file format of
 the disk in ThreadOS
