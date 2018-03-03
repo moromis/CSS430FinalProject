@@ -51,6 +51,8 @@ public class Directory {
 	  filename.getChars( 0, fsizes[fileCounter], fnames[fileCounter], 0 );
 	  
 	  //TODO: allocate an inode number? how to do?
+	  //from slides: create new inode: check if there's a free inode and assign it to the file,
+	  //return inode number, otherwise return error
    }
 
    public boolean ifree( short iNumber ) {
