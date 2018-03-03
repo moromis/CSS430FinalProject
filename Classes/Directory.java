@@ -26,6 +26,9 @@ public class Directory {
    public void bytes2directory( byte data[] ) {
       // assumes data[] received directory information from disk
       // initializes the Directory instance with this data[]
+	  
+	  //use SysLib.bytes2int and using the format created in directory2bytes
+	  //read in fsize, fnames, and fileCounter
    }
 
    public byte[] directory2bytes( ) {
@@ -33,6 +36,10 @@ public class Directory {
       // this byte array will be written back to disk
       // note: only meaningfull directory information should be converted
       // into bytes.
+	  
+	  //called by filesystem - likely in sync
+	  
+	  //use SysLib.int2bytes and store fsize, fnames, and fileCounter in a byte array, and then return that array
    }
 
    public short ialloc( String filename ) {
