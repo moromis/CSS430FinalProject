@@ -6,6 +6,7 @@ public class Directory {
    // Directory entries
    private int fsize[];        // each element stores a different file size.
    private char fnames[][];    // each element stores a different file name.
+   private fileCounter = 0;
 
    public Directory( int maxInumber ) { // directory constructor
    
@@ -18,6 +19,8 @@ public class Directory {
       String root = "/";                // entry(inode) 0 is "/"
       fsize[0] = root.length( );        // fsize[0] is the size of "/".
       root.getChars( 0, fsizes[0], fnames[0], 0 ); // fnames[0] includes "/"
+	  
+	  fileCounter++;
    }
 
    public void bytes2directory( byte data[] ) {
@@ -33,13 +36,23 @@ public class Directory {
    }
 
    public short ialloc( String filename ) {
+	   
       // filename is the one of a file to be created.
       // allocates a new inode number for this filename
+	  
+	  fsize[fileCounter] = filename.length();
+	  filename.getChars( 0, fsizes[fileCounter], fnames[fileCounter], 0 );
+	  
+	  //TODO: allocate an inode number? how to do?
    }
 
    public boolean ifree( short iNumber ) {
+	   
       // deallocates this inumber (inode number)
       // the corresponding file will be deleted.
+	  
+	  String thefilename = "";	//TODO get the file name
+	  SysLib.delete(thefilename);
    }
 
    public short namei( String filename ) {

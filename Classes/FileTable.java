@@ -10,6 +10,7 @@ public class FileTable {
 
    // major public methods
    public synchronized FileTableEntry falloc( String filename, String mode ) {
+	   
       // allocate a new file (structure) table entry for this file name
       // allocate/retrieve and register the corresponding inode using dir
       // increment this inode's count
@@ -20,6 +21,7 @@ public class FileTable {
 	  Inode inode = null;
 	  
 	  while( true ) {
+		  
 		  iNumber = ( filename.equals( "/" ) ? 0 : dir.namei( fname );
 		  if( iNumber >= 0 ) {
 			  
@@ -45,7 +47,7 @@ public class FileTable {
 				  
 				  //TODO: implement
 				  
-			  }
+			  }//TODO: other modes? "w+" and "a" ?
 		  }
 		  
 		  inode.count++;
@@ -57,10 +59,30 @@ public class FileTable {
    }
 
    public synchronized boolean ffree( FileTableEntry e ) {
+	   
       // receive a file table entry reference
       // save the corresponding inode to the disk
       // free this file table entry.
       // return true if this file table entry found in my table
+	  
+	  for(int i = 0; i < table.size(); i++){
+		  if(table[i] = e){
+			  
+			  //decrease the number of references to the inode,
+			  //since we're freeing it, and then save the inode 
+			  //to the disk
+			  Inode inode = e.inode;
+			  inode.count--;
+			  inode.toDisk( iNumber );
+			  
+			  //remove the file table entry from the 
+			  table.remove(i);
+			  return true;
+		  }
+	  }
+	  
+	  //didn't find the file table entry
+	  return false;
    }
 
    public synchronized boolean fempty( ) {

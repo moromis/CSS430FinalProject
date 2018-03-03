@@ -39,15 +39,15 @@ public class SuperBlock {
 		
 	}
 	
-	void getFreeBlock() {
+	int getFreeBlock() {
 		
-		//implement
+		return freeList;
 		
 	}
 	
 	void returnBlock( int blockNumber ) {
 		
-		//implement
+		freeList = blockNumber;
 		
 	}
 
