@@ -35,18 +35,30 @@ public class SuperBlock {
 	
 	void sync() {
 		
-		//implement
+		//create a byte array to represent the superblock
+		byte[] superBlock = new byte[Disk.blockSize];
+		
+		//convert all the superblock info into bytes, put
+		//them in the byte array
+		SysLib.int2bytes( totalBlocks, superBlock, 0 );
+		SysLib.int2bytes( totalInodes, superBlock, 4 );
+		SysLib.int2bytes( freeList, superBlock, 8 );
+		
+		//write the superblock to sync
+		SysLib.rawwrite( 0, superBlock );
 		
 	}
 	
 	int getFreeBlock() {
 		
+		//return the first free block
 		return freeList;
 		
 	}
 	
 	void returnBlock( int blockNumber ) {
 		
+		//change the first free block
 		freeList = blockNumber;
 		
 	}
