@@ -33,7 +33,6 @@ public class FileSystem {
 
 		
 	}
-	
 	/*
 	*	Format the max number of inodes
 	*	file number = # inodes
@@ -48,6 +47,7 @@ public class FileSystem {
 		
 	}
 	
+
 	FileTableEntry open( String filename, String mode ) {
 		
 		FileTableEntry ftEnt = filetable.falloc( filename, mode );
@@ -57,6 +57,7 @@ public class FileSystem {
 		}
 		return ftEnt;
 	}
+	
 	
 	boolean close( FileTableEntry ftEnt ) {
 		
@@ -70,11 +71,13 @@ public class FileSystem {
 		
 	}
 	
+	
 	int write( FileTableEntry ftEnt, byte[] buffer ) {
 		
 		//TODO: implement
 		
 	}
+	
 	
 	int fsize( FileTableEntry ftEnt ) {
 		
@@ -101,6 +104,7 @@ public class FileSystem {
 	private final int SEEK_SET = 0;
 	private final int SEEK_CUR = 1;
 	private final int SEEK_END = 2;
+	
 	
 	int seek( FileTableEntry ftEnt, int offset, int whence ) {
 		
