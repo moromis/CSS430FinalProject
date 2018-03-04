@@ -34,10 +34,14 @@ public class FileSystem {
 		
 	}
 	
+<<<<<<< HEAD
+
+=======
 	/*
 	*	Format the max number of inodes
 	*	file number = # inodes
 	*/
+>>>>>>> master
 	boolean format( int files ) {
 		//block 0 is superblock
 		
@@ -48,6 +52,7 @@ public class FileSystem {
 		
 	}
 	
+
 	FileTableEntry open( String filename, String mode ) {
 		
 		FileTableEntry ftEnt = filetable.falloc( filename, mode );
@@ -57,6 +62,7 @@ public class FileSystem {
 		}
 		return ftEnt;
 	}
+	
 	
 	boolean close( FileTableEntry ftEnt ) {
 		
@@ -70,11 +76,13 @@ public class FileSystem {
 		
 	}
 	
+	
 	int write( FileTableEntry ftEnt, byte[] buffer ) {
 		
 		//TODO: implement
 		
 	}
+	
 	
 	int fsize( FileTableEntry ftEnt ) {
 		
@@ -87,10 +95,14 @@ public class FileSystem {
 		
 	}
 	
+<<<<<<< HEAD
+	
+=======
 	/*
 	*	Delete the file from the disk
 	*	get entry and remove from directory
 	*/
+>>>>>>> master
 	boolean delete( String filename ) {
 		FileTableEntry entry = this.open(filename, "w");
 		short info = entry.iNumber;
@@ -101,6 +113,7 @@ public class FileSystem {
 	private final int SEEK_SET = 0;
 	private final int SEEK_CUR = 1;
 	private final int SEEK_END = 2;
+	
 	
 	int seek( FileTableEntry ftEnt, int offset, int whence ) {
 		
