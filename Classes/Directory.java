@@ -1,3 +1,10 @@
+/**Directory.java
+
+This class handles the directory system for ThreadOS.
+
+@author Daniel Grimm
+@author Kevin Ulrich
+@author Preston Mar*/
 
 public class Directory {
 	
@@ -20,11 +27,17 @@ public class Directory {
       root.getChars( 0, fsizes[0], fnames[0], 0 ); // fnames[0] includes "/"
    }
 
+   /** This method
+   @param 
+   @return*/
    public void bytes2directory( byte data[] ) {
       // assumes data[] received directory information from disk
       // initializes the Directory instance with this data[]
    }
 
+   /** This method
+   @param 
+   @return*/
    public byte[] directory2bytes( ) {
       // converts and return Directory information into a plain byte array
       // this byte array will be written back to disk
@@ -32,16 +45,25 @@ public class Directory {
       // into bytes.
    }
 
+   /** This method
+   @param 
+   @return*/
    public short ialloc( String filename ) {
       // filename is the one of a file to be created.
       // allocates a new inode number for this filename
    }
 
+   /** This method
+   @param 
+   @return*/
    public boolean ifree( short iNumber ) {
       // deallocates this inumber (inode number)
       // the corresponding file will be deleted.
    }
 
+   /** This method
+   @param 
+   @return*/
    public short namei( String filename ) {
       // returns the inumber corresponding to this filename
    }

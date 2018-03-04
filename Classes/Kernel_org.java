@@ -278,14 +278,14 @@ public class Kernel
 
                case WRITEBUF: //to be implemented in project
 
-                  //
+                  //Get the TCB
                   if ( (myTcb = scheduler.getMyTcb()) != null) {
                      FileTableEntry ftEnt = myTcb.getFtEnt(param);//get the FTE
-                     if (ftEnt != null)
-                        return fs.write(ftEnt, (byte[]) args);
+                     if (ftEnt != null)//write if not null
+                        return fs.write(ftEnt, (byte[]) args);//return the number of bytes
                   }
 
-                  return ERROR;
+                  return ERROR;//return error
 				   
             }
             return ERROR;
