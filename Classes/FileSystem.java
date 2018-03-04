@@ -30,17 +30,24 @@ public class FileSystem {
 	}
 	
 	void sync() {
-		
-		//TODO: implement
+
 		
 	}
-	
+	/*
+	*	Format the max number of inodes
+	*	file number = # inodes
+	*/
 	boolean format( int files ) {
+		//block 0 is superblock
 		
-		//TODO: implement
+		//inode blocks
+
+		//first free block
+		superblock.format(files);
 		
 	}
 	
+
 	FileTableEntry open( String filename, String mode ) {
 		
 		FileTableEntry ftEnt = filetable.falloc( filename, mode );
@@ -50,6 +57,7 @@ public class FileSystem {
 		}
 		return ftEnt;
 	}
+	
 	
 	boolean close( FileTableEntry ftEnt ) {
 		
@@ -63,11 +71,13 @@ public class FileSystem {
 		
 	}
 	
+	
 	int write( FileTableEntry ftEnt, byte[] buffer ) {
 		
 		//TODO: implement
 		
 	}
+	
 	
 	int fsize( FileTableEntry ftEnt ) {
 		
@@ -76,20 +86,25 @@ public class FileSystem {
 	}
 	
 	private boolean deallocAllBlocks( FileTableEntry ftEnt ) {
-		
-		//TODO: implement
+
 		
 	}
 	
+	/*
+	*	Delete the file from the disk
+	*	get entry and remove from directory
+	*/
 	boolean delete( String filename ) {
-		
-		//TODO: implement
+		FileTableEntry entry = this.open(filename, "w");
+		short info = entry.iNumber;
+		return this.close(entry) && this.directory.ifree(info);
 		
 	}
 	
 	private final int SEEK_SET = 0;
 	private final int SEEK_CUR = 1;
 	private final int SEEK_END = 2;
+	
 	
 	int seek( FileTableEntry ftEnt, int offset, int whence ) {
 		

@@ -35,6 +35,8 @@ public class Kernel
    //              int whence )
    public final static int FORMAT  = 18; // SysLib.format( int files )
    public final static int DELETE  = 19; // SysLib.delete( String fileName )
+   public final static int READBUF = 20; // SysLib.read(int fd, byte[] buffer)
+   public final static int WRITEBUF = 21; //SysLib.write(int fd, byte[] buffer)
 
    // Predefined file descriptors
    public final static int STDIN  = 0;
@@ -254,12 +256,36 @@ public class Kernel
 					return ERROR;
 
                case FORMAT:  // to be implemented in project
-			   
-                   return ( fs.format( param ) == true ) ? OK : ERROR;
+
+                  //If the file is properly formatted then OK is returned,
+                  //else ERROR is returned.
+                   return ( fs.format( param ) == true ) ? OK : ERROR;//Original code
 				   
                case DELETE:  // to be implemented in project
 			   
-                   return ( fs.delete( (String)args ) == true ) ? OK : ERROR
+                   return ( fs.delete( (String)args ) == true ) ? OK : ERROR;
+
+               case READBUF:  // to be implemented in project
+
+                  //Get the TCB
+                  if ( (myTcb = scheduler.getMyTcb() ) != null ) {
+                     FileTableEntry ftEnt = myTcb.getFtEnt(param);//get the FTE
+                     if ( ftEnt != null )
+                        return fs.read(ftEnt, (byte[]) args);//Return the result
+                  }
+
+                  return ERROR;//return error
+
+               case WRITEBUF: //to be implemented in project
+
+                  //Get the TCB
+                  if ( (myTcb = scheduler.getMyTcb()) != null) {
+                     FileTableEntry ftEnt = myTcb.getFtEnt(param);//get the FTE
+                     if (ftEnt != null)//write if not null
+                        return fs.write(ftEnt, (byte[]) args);//return the number of bytes
+                  }
+
+                  return ERROR;//return error
 				   
             }
             return ERROR;
