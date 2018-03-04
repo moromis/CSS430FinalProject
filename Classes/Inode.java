@@ -18,7 +18,9 @@ public class Inode {
 	count = 2 bytes
 	flag = 2 bytes
 	direct = 22 bytes (11 shorts)
-	indirect = 2 bytes
+	indirect = 2 bytes - note, indirect block is 512 bytes, each reference
+						in the indirect block is a short, for a total of
+						256 indirect blocks
 	
 	*/
 
