@@ -30,15 +30,25 @@ public class FileSystem {
 	}
 	
 	void sync() {
-		
-		//TODO: implement
+
 		
 	}
 	
+<<<<<<< HEAD
 
+=======
+	/*
+	*	Format the max number of inodes
+	*	file number = # inodes
+	*/
+>>>>>>> master
 	boolean format( int files ) {
+		//block 0 is superblock
 		
-		//TODO: implement
+		//inode blocks
+
+		//first free block
+		superblock.format(files);
 		
 	}
 	
@@ -81,15 +91,22 @@ public class FileSystem {
 	}
 	
 	private boolean deallocAllBlocks( FileTableEntry ftEnt ) {
-		
-		//TODO: implement
+
 		
 	}
 	
+<<<<<<< HEAD
 	
+=======
+	/*
+	*	Delete the file from the disk
+	*	get entry and remove from directory
+	*/
+>>>>>>> master
 	boolean delete( String filename ) {
-		
-		//TODO: implement
+		FileTableEntry entry = this.open(filename, "w");
+		short info = entry.iNumber;
+		return this.close(entry) && this.directory.ifree(info);
 		
 	}
 	
