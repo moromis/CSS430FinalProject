@@ -33,15 +33,10 @@ public class FileSystem {
 
 		
 	}
-	
-<<<<<<< HEAD
-
-=======
 	/*
 	*	Format the max number of inodes
 	*	file number = # inodes
 	*/
->>>>>>> master
 	boolean format( int files ) {
 		//block 0 is superblock
 		
@@ -95,14 +90,10 @@ public class FileSystem {
 		
 	}
 	
-<<<<<<< HEAD
-	
-=======
 	/*
 	*	Delete the file from the disk
 	*	get entry and remove from directory
 	*/
->>>>>>> master
 	boolean delete( String filename ) {
 		FileTableEntry entry = this.open(filename, "w");
 		short info = entry.iNumber;
