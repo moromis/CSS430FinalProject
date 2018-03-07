@@ -86,8 +86,14 @@ public class Inode {
    }
    
    short findTargetBlock( int offset ) {
-	   
-		//TODO: implement
+		
+		if(i < directSize){
+			return direct[offset]
+		}else if(i >= directSize && i < 256 + directSize){
+			return indirect; //TODO: return actual block from indirect
+		}
+			
+		return -1;
 	   
    }
    
