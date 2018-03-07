@@ -148,7 +148,38 @@ public class FileSystem {
 			int buflen = buffer.length;
 			
 			synchronized(ftEnt){
-				//TODO
+				while(buflen > 0){
+					int theBlock = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
+					//if block does not exist, create it
+					if(theBlock == -1){
+						short newBlock = (short)this.superblock.getFreeBlock();
+						//init new block
+						theBlock = newBlock;
+					}
+					byte[] aBlock = new byte[512];
+					int startPoint = ftEnt.seekPtr % 512;
+					int bytesToWrite = 512 - startPoint;
+
+					//calc the ammount of bytes written
+					//either buflen if end of buffer, or bytesToWrite
+					int bytesWritten = Math.min(bytesToWrite, buflen);
+					//copy buffer to aBlock
+					System.arraycopy(buffer, written, aBlock, startPoint, bytesWritten);
+					//write to block
+					SysLib.rawwrite(theBlock, aBlock);
+					ftEnt.seekPtr += bytesWritten;
+					written += bytesWritten;
+					buflen -= bytesWritten;
+
+					//deal with reaching end of inode
+					if(ftEnt.seekPtr > ftEnt.inode.length){
+						//update length if it grows
+						ftEnt.inode.length = ftEnt.seekPtr;
+					}					
+				}
+				//save to disk
+				ftEnt.inode.toDisk(ftEnt.iNumber);
+				return written;
 			}
 		}else{
 			//fail
@@ -168,8 +199,12 @@ public class FileSystem {
 	}
 	
 	private boolean deallocAllBlocks( FileTableEntry ftEnt ) {
-
-		//TODO: implement
+		if(ftEnt.inode.count != 1){
+			//if files reference this inode
+			return false;
+		}else{
+			//TODO
+		}
 	}
 	
 	/*
