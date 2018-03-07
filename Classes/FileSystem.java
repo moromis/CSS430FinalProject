@@ -91,7 +91,46 @@ public class FileSystem {
 			int buflen = buffer.length;
 
 			synchronized(ftEnt){
-				while(buflen > 0 && )
+				while(buflen > 0 && ftEnt.seekPtr < this.fsize(ftEnt)){
+					//get block to start reading from
+					int theblock = fnEnt.inode.findTargetBlock(ftEnt.seekPtr);
+					if(theblock == -1){
+						//does not exists or failure
+						break;
+					}
+					//fill up one block in array
+					byte[] ablock = new byte[512]
+					SysLib.rawread(theblock, ablock)
+
+					//find where the seekpoint is in relation to the block
+					int startPoint = ftEnt.seekPtr % 512;
+					//calc bytes read in from the block
+					int readBytes = 512 - startPoint;
+					//calc total bytes left in inode
+					int bytesLeft = this.fsize(ftEnt) - ftEnt.seekPoint;
+
+					int bytesReadIn = 0;
+
+					//determine how many bytes were read in
+					if(readBytes <= buflen){
+						if(readBytes <= bytesLeft){
+							bytesReadIn = readBytes;
+						}else{
+							bytesReadIn = bytesLeft;
+						}
+					}else{
+						bytesReadIn = Math.min(buflen, bytesLeft);
+					}
+
+					//copy block buffer to output buffer
+					System.arraycopy(ablock, startPoint, buffer, readin, bytesReadIn);
+
+					//update values
+					ftEnt.seekPtr += bytesReadIn;
+					readin += bytesReadIn;
+					buflen -= bytesReadIn;
+
+				}
 			}
 		}else{
 			//bad input
@@ -99,9 +138,22 @@ public class FileSystem {
 		}		
 	}
 	
+	/*
+	*	writes contents of buffer to ftEnt starting at seekPoint
+	*	returns number of bytes written
+	*/
 	int write( FileTableEntry ftEnt, byte[] buffer ) {
-		
-		//TODO: implement
+		if(ftEnt.mode == "w" || ftEnt.mode == "w+" || ftEnt.mode == "a"){
+			int written = 0;
+			int buflen = buffer.length;
+			
+			synchronized(ftEnt){
+				//TODO
+			}
+		}else{
+			//fail
+			return -1;
+		}
 		
 	}
 	
@@ -137,9 +189,24 @@ public class FileSystem {
 	private final int SEEK_CUR = 1;
 	private final int SEEK_END = 2;
 	
+	/*
+	* updates ftEnt.seekPtr
+	*/
 	int seek( FileTableEntry ftEnt, int offset, int whence ) {
-		
-		//TODO: implement
+		synchronized(ftEnt){
+			switch whence{
+				case SEEK_SET:
+					ftEnt.seekPtr = offset;
+					break;
+				case SEEK_CUR:
+					ftEnt.seekPtr += offset;
+					break;
+				case SEEK_END:
+					ftEnt.seekPtr = this.fsize(ftEnt) + offset;
+					break;
+
+			}
+		}
 		
 	}
 }
