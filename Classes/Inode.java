@@ -75,19 +75,76 @@ public class Inode {
    
    short getIndexBlockNumber() {
 	   
-	   //TODO: implement
+	   //look for a free direct index
+		for(int i = 0; i < directSize; i++){
+			if(direct[i] == 0){
+				return direct[i]; //TODO: or should we return i here?
+			}
+		}
+		
+		//if we get here then the direct block is full
+		//TODO: iterate through the block that the indirect pointer points
+		//		to, and if we find a 0 then place the block there and return true
+		
+		//if we get here then this whole inode is full
+		return -1;
 	   
    }
    
    boolean setIndexBlock( short indexBlockNumber ) {
 		
-		//TODO: implement
+		//look for a free direct index
+		for(int i = 0; i < directSize; i++){
+			if(direct[i] == 0){
+				direct[index] = shortBlockNumber;
+				directIsFull = false;
+				return true;
+			}
+		}
+		
+		//otherwise, the direct blocks are all taken up, so
+		//we need to place this block in the indirect pointer
+		
+		//TODO: iterate through the block that the indirect pointer points
+		//		to, and if we find a 0 then place the block there and return true
+		
+		//if we get here then this whole inode is full
+		return false;
 		
    }
    
    short findTargetBlock( int offset ) {
-	   
-		//TODO: implement
+		
+		//translate the offset into a block number
+		int index = Math.floor(offset / 512); //TODO: maybe could use a constant here? should Inode know about disk block size?
+		
+		//find the corresponding block using the index
+		if(index >= 0){
+			
+			if(index < directSize){
+				
+				if(direct[offset] != 0)
+					return direct[offset];
+				else
+					return -1;
+				
+			}else if(index >= directSize && index < 256 + directSize){
+				
+				//TODO: return actual block from indirect
+				if(indirect != 0)
+					return indirect;
+				else
+					return -1;
+				
+			}
+			
+			return -1;
+			
+		}else{
+			
+			return -1;
+			
+		}
 	   
    }
    
