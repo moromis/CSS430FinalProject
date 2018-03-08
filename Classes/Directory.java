@@ -13,9 +13,12 @@ public class Directory {
    // Directory entries
    private int fsize[];        // each element stores a different file size.
    private char fnames[][];    // each element stores a different file name.
+   private int maxInumber = 0;
    private int fileCounter = 0;
 
    public Directory( int maxInumber ) { // directory constructor
+
+      this.maxInumber = maxInumber;
    
       fsize = new int[maxInumber];     // maxInumber = max files
 	  
@@ -40,6 +43,23 @@ public class Directory {
 	  
 	  //use SysLib.bytes2int and using the format created in directory2bytes
 	  //read in fsize, fnames, and fileCounter
+
+      /*Daniel's comments:
+      Going to assume that data is separated by maxInumber and maxChars and that all file sizes come
+      before the file names.*/
+
+      //retrieves all of the file sizes
+      for (int i = 0; i < maxInumber; i++) {
+         fsize[i] = data[i];
+      }
+
+      int index = 0;
+      //retrieves the character array
+      for (int i = 0; i < maxInumber; i++) {
+         for (int j = 0; j < maxChars; j++) {
+            fnames[i][j] = (char) fsize[maxInumber + index++];
+         }
+      }
    }
 
    /** This method writes the directory information into a byte array to be
@@ -54,7 +74,27 @@ public class Directory {
 	  //called by filesystem - likely in sync
 	  
 	  //use SysLib.int2bytes and store fsize, fnames, and fileCounter in a byte array, and then return that array
-      return new byte[0];
+
+      /*Daniel's comments:
+      Going to assume that data will be separated by maxInumber and maxChars and that all the file sizes come before
+      the file name.*/
+
+      byte data[] = new byte[maxInumber + (maxInumber * maxChars)];
+
+      //Loads all of the file sizes into the byte array
+      for (int i = 0; i < maxInumber; i++) {
+         data[i] = (byte) fsize[i];//TODO: Implement properly with SysLib calls
+      }
+
+      int index = 0;
+      //loads all of the characters into the byte array
+      for (int i = 0; i < maxInumber; i++) {
+         for (int j = 0; j < maxChars; j++) {
+            data[maxInumber + index++] = (byte) fnames[i][j];
+         }
+      }
+
+      return data;
    }
 
    /** This method allocates an inode for the new file.
