@@ -29,9 +29,13 @@ public class FileSystem {
 		SysLib.close( dirEnt );
 	}
 	
+	//	write all to disk?
 	void sync() {
-
-		//TODO: implement
+		FileTableEntry ftEnt = this.open("/","w");
+		byte[] theDirec = this.directory.directory2Bytes();
+		this.write(ftEnt, theDirec);
+		this.close(ftEnt);
+		this.superblock.sync();
 	}
 	
 	/*
@@ -39,13 +43,14 @@ public class FileSystem {
 	*	file number = # inodes
 	*/
 	boolean format( int files ) {
-		//block 0 is superblock
-		
-		//inode blocks
 
-		//first free block
-		superblock.format(files);
-		
+		//block 0 is superblock
+		//create superblock with max inode num = files
+		//inode blocks
+		this.directory = new Directory(this.superblock.totalInodes);
+		//free blocks
+		this.filetable = new FileTable(this.directory);
+		return true;	
 	}
 	
 	FileTableEntry open( String filename, String mode ) {
