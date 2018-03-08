@@ -146,9 +146,33 @@ public class Directory {
    @param filename : The name of the file.
    @return short : The inode number.*/
    public short namei( String filename ) {
+      if (filename.length() > maxChars) {
+         return -1;
+      }
       // returns the inumber corresponding to this filename
 	  
+      //get the filname as an array of characters
+      //assumes that file names are very different from each other
+      int index = 0;
+      boolean found = false;
+      char charFilename = filename.toCharArray();
+      for (int i = 0; i < maxInumber; i++) {
+         for (int j = 0; j < filename.length(); j++) {
+            if (charFilename[j] != fnames[i][j]) {
+               found = false;
+               break;
+            }
+            else {
+               found = true;
+            }
+         }
+         index++;
+         if (found) {
+            break;
+         }
+      }
+
 	  //return -1 if no inode is associated with the filename - can happen
-      return -1;
+      return -1;//TODO: How to associate a filename with an inode?
    }
 }
