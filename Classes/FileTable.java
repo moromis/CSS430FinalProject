@@ -1,3 +1,5 @@
+import java.util.*;
+
 public class FileTable {
 
    private Vector table;         // the actual entity of this file table
@@ -16,8 +18,13 @@ public class FileTable {
       // increment this inode's count
       // immediately write back this inode to the disk
       // return a reference to this file (structure) table entry
-	  
-	  iNumber = ( filename.equals( "/" ) ? 0 : dir.namei( fname );
+
+		//preinitialize the inumber and inode	  
+		short iNumber = -1;
+		Inode inode = null;
+
+		//get the inumber associated with the filename
+	  iNumber = ( filename.equals( "/" ) ? 0 : dir.namei( filename ) );
 	  
 	  if(iNumber >= 0){
 		  
@@ -38,6 +45,11 @@ public class FileTable {
 		  inode.count++;
 		  inode.toDisk( iNumber );
 		  return e;
+
+	  }else{
+
+		return null;
+	
 	  }
 	  
 	  /*
@@ -48,7 +60,7 @@ public class FileTable {
 	  while( true ) {
 		  
 		  //get the inumber for the filename
-		  iNumber = ( filename.equals( "/" ) ? 0 : dir.namei( fname );
+		  iNumber = ( filename.equals( "/" ) ? 0 : dir.namei( fname ) );
 		  
 		  //if it's not the root directory
 		  if( iNumber >= 0 ) {
@@ -110,13 +122,16 @@ public class FileTable {
       // free this file table entry.
       // return true if this file table entry found in my table
 	  
+		
+
 	  for(int i = 0; i < table.size(); i++){
-		  if(table[i] = e){
+		  if(table.elementAt(i) == e){
 			  
 			  //decrease the number of references to the inode,
 			  //since we're freeing it, and then save the inode 
 			  //to the disk
 			  Inode inode = e.inode;
+			  short iNumber = e.iNumber;
 			  inode.count--;
 			  inode.toDisk( iNumber );
 			  

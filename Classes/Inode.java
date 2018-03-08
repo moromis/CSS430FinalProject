@@ -46,8 +46,10 @@ public class Inode {
 		offset += 2;
 		flag = SysLib.bytes2short( data, offset );
 		offset += 2;
-		direct = SysLib.bytes2short( data, offset );
-		offset += 22;
+		for(int i = 0; i < directSize; i++){
+			direct[i] = SysLib.bytes2short( data, offset );
+			offset += 2;
+		}
 		indirect = SysLib.bytes2short( data, offset );
 		// 32 bytes in total
    }
@@ -65,12 +67,14 @@ public class Inode {
 		offset += 2;
 		SysLib.short2bytes( flag, data, offset );
 		offset += 2;
-		SysLib.short2bytes( direct, data, offset );
-		offset += 22;
+		for(int i = 0; i < directSize; i++){
+			SysLib.short2bytes( direct[i], data, offset );
+			offset += 2;
+		}
 		SysLib.short2bytes( indirect, data, offset );
 		
 		// write this Inode to the disk
-		SysLib.rawrite( blockNumber, data );
+		return SysLib.rawwrite( blockNumber, data );
    }
    
    //returns the block that was last placed in this inode, i.e. the most
@@ -94,11 +98,14 @@ public class Inode {
 			SysLib.rawread( indirect, data );
 			
 			//go through the indirect block
-			for(int i = 0; i < Disk.blockSize; i++){
+			for(int i = 0; i < Disk.blockSize; i += 2){
+
+				//get the ith short from the block that we've stored in data
+				short s = SysLib.bytes2short( data, i );
 				
-				//if we find the latest block here, return it
-				if(data[i] == 0 && i != 0){
-					return data[i - 1];
+				//if we find the latest block index, return it
+				if(s == 0 && i != 0){
+					return SysLib.bytes2short( data, i - 2 );
 				}
 			}
 			
@@ -115,7 +122,7 @@ public class Inode {
 		//look for a free direct index
 		for(int i = 0; i < directSize; i++){
 			if(direct[i] == 0){
-				direct[index] = indexBlockNumber;
+				direct[i] = indexBlockNumber;
 				return true;
 			}
 		}
@@ -133,11 +140,21 @@ public class Inode {
 			SysLib.rawread( indirect, data );
 			
 			//go through the indirect block
-			for(int i = 0; i < Disk.blockSize; i++){
+			for(int i = 0; i < Disk.blockSize; i += 2){
+
+				//get the ith short from the block that we've stored in data
+				short s = SysLib.bytes2short( data, i );
 				
-				//if we find a free location to put the block, place it
+				//if we find a free location to put the block, place it there
 				if(data[i] == 0){
-					data[i] = indexBlockNumber;
+
+					//convert it to bytes and put it in the data block
+					SysLib.short2bytes( indexBlockNumber, data, i );
+
+					//write the data block to disk
+					SysLib.rawwrite( indirect, data );
+
+					//return true to say that we were able to write the block
 					return true;
 				}
 			}
@@ -158,7 +175,7 @@ public class Inode {
    short findTargetBlock( int offset ) {
 		
 		//translate the offset into a block number
-		int index = Math.floor(offset / Disk.blockSize);
+		int index = (int)Math.floor(offset / Disk.blockSize);
 		
 		//find the corresponding block using the index
 		if(index >= 0){
@@ -181,8 +198,8 @@ public class Inode {
 			//otherwise if the index is an indirect block	
 			}else if(index >= directSize && index < 256 + directSize){
 				
-				//remove 12 from the block index - for instance if we're trying
-				//to find block 13, then really it's block index 1
+				//remove 11 from the block index - for instance if we're trying
+				//to find block index 12 (the 13th block), then really it's block index 1
 				//in the indirect pointer block
 				index -= directSize;
 				
@@ -191,12 +208,13 @@ public class Inode {
 					//get the indirect block of pointers
 					byte [] data = new byte[Disk.blockSize];
 					SysLib.rawread( indirect, data );
+					short targetBlock = SysLib.bytes2short(data, offset);
 					
 					//return the correct block if it's been filled
-					if(data[index] != 0){
+					if(targetBlock != 0){
 						
 						//return the block
-						return data[index];
+						return targetBlock;
 						
 					}else{
 						
