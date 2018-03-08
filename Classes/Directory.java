@@ -107,11 +107,24 @@ public class Directory {
 	  
 	  fsize[fileCounter] = filename.length();
 	  filename.getChars( 0, fsize[fileCounter], fnames[fileCounter], 0 );
-	  
+     fileCounter++;
+     Inode newInode = new Inode();
+
+     //determine if there is space for the inode
+	  if (true) {
+         //There is no inode available so return an error message
+         return -1;
+     } else {
+         //There is an inode available so assign the inode to the file
+         // and return the inode number
+
+         /*TODO: Assign the inode to the file.*/
+         return newInode.getIndexBlockNumber();
+     }
+
 	  //TODO: allocate an inode number? how to do?
 	  //from slides: create new inode: check if there's a free inode and assign it to the file,
 	  //return inode number, otherwise return error (-1)
-     return -1;
    }
 
    /** This method frees up an inode using the supplied inode number.
