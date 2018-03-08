@@ -73,20 +73,39 @@ public class Inode {
 		SysLib.rawrite( blockNumber, data );
    }
    
+   //returns the block that was last placed in this inode, i.e. the most
+   //recent one
    short getIndexBlockNumber() {
 	   
 	   //look for a free direct index
 		for(int i = 0; i < directSize; i++){
-			if(direct[i] == 0){
-				return direct[i]; //TODO: or should we return i here?
+			if(direct[i] == 0 && i != 0){
+				return direct[i - 1];
 			}
 		}
 		
-		//if we get here then the direct block is full
-		//TODO: iterate through the block that the indirect pointer points
-		//		to, and if we find a 0 then place the block there and return true
+		//otherwise, the direct blocks are all taken up, so
+		//the latest block must be in indirect or the inode is full
 		
-		//if we get here then this whole inode is full
+		if(indirect != 0){
+			
+			//get the indirect block from memory
+			byte [] data = new byte[Disk.blockSize];
+			SysLib.rawread( indirect, data );
+			
+			//go through the indirect block
+			for(int i = 0; i < Disk.blockSize; i++){
+				
+				//if we find the latest block here, return it
+				if(data[i] == 0 && i != 0){
+					return data[i - 1];
+				}
+			}
+			
+		}
+		
+		//if we get here then this whole inode is full or the indirect
+		//pointer is unallocated or the first index is 0 (nothing in the inode)
 		return -1;
 	   
    }
@@ -96,8 +115,7 @@ public class Inode {
 		//look for a free direct index
 		for(int i = 0; i < directSize; i++){
 			if(direct[i] == 0){
-				direct[index] = shortBlockNumber;
-				directIsFull = false;
+				direct[index] = indexBlockNumber;
 				return true;
 			}
 		}
@@ -105,8 +123,32 @@ public class Inode {
 		//otherwise, the direct blocks are all taken up, so
 		//we need to place this block in the indirect pointer
 		
-		//TODO: iterate through the block that the indirect pointer points
-		//		to, and if we find a 0 then place the block there and return true
+		if(indirect != 0){
+			
+			//if the indirect pointer is allocated, search it for a place to put
+			//the block
+			
+			//get the indirect block from memory
+			byte [] data = new byte[Disk.blockSize];
+			SysLib.rawread( indirect, data );
+			
+			//go through the indirect block
+			for(int i = 0; i < Disk.blockSize; i++){
+				
+				//if we find a free location to put the block, place it
+				if(data[i] == 0){
+					data[i] = indexBlockNumber;
+					return true;
+				}
+			}
+			
+		}else{
+			
+			//otherwise just set the indirect pointer
+			indirect = indexBlockNumber;
+			return true;
+			
+		}
 		
 		//if we get here then this whole inode is full
 		return false;
@@ -116,32 +158,69 @@ public class Inode {
    short findTargetBlock( int offset ) {
 		
 		//translate the offset into a block number
-		int index = Math.floor(offset / 512); //TODO: maybe could use a constant here? should Inode know about disk block size?
+		int index = Math.floor(offset / Disk.blockSize);
 		
 		//find the corresponding block using the index
 		if(index >= 0){
 			
+			//if the index is a direct block...
 			if(index < directSize){
 				
-				if(direct[offset] != 0)
+				if(direct[offset] != 0){
+					
+					//return the block
 					return direct[offset];
-				else
+					
+				}else{
+					
+					//if the direct block is unallocated return -1
 					return -1;
+					
+				}
 				
+			//otherwise if the index is an indirect block	
 			}else if(index >= directSize && index < 256 + directSize){
 				
-				//TODO: return actual block from indirect
-				if(indirect != 0)
-					return indirect;
-				else
-					return -1;
+				//remove 12 from the block index - for instance if we're trying
+				//to find block 13, then really it's block index 1
+				//in the indirect pointer block
+				index -= directSize;
 				
-			}
+				if(indirect != 0){
+					
+					//get the indirect block of pointers
+					byte [] data = new byte[Disk.blockSize];
+					SysLib.rawread( indirect, data );
+					
+					//return the correct block if it's been filled
+					if(data[index] != 0){
+						
+						//return the block
+						return data[index];
+						
+					}else{
+						
+						//if the block the caller wants is unallocated, return -1
+						return -1;
+					}
+					
+				}else{
+					
+					//if the indirect pointer is unallocated, return -1
+					return -1;
+				}
+				
+			}else{
+				
+				//otherwise a block index larger than the number of blocks in
+				//an inode was asked for, return -1
+				return -1;
 			
-			return -1;
+			}
 			
 		}else{
 			
+			//if the index is negative don't even try it bud
 			return -1;
 			
 		}
