@@ -10,32 +10,32 @@ public class FileSystem {
 
 	private SuperBlock superblock;
 	private Directory directory;
-	private FileStructureTable filetable;
+	private FileTable filetable;
 	
 	public FileSystem( int diskBlocks ) {
 		superblock = new SuperBlock( diskBlocks );
 		directory = new Directory ( superblock.totalInodes );
-		filetable = new FileStructureTable( directory );
+		filetable = new FileTable( directory );
 		
 		//read the "/" file from diskBlocks
-		FileTableEntry dirEnt = SysLib.open( "/", "r" );
+		FileTableEntry dirEnt = open( "/", "r" );
 		int dirSize = fsize( dirEnt );
 		if(dirSize > 0 ) {
 			// the directory has some data.
 			byte[] dirData = new byte[dirSize];
-			SysLib.read( dirEnt, dirData );
+			read( dirEnt, dirData );
 			directory.bytes2directory( dirData );
 		}
-		SysLib.close( dirEnt );
+		close( dirEnt );
 	}
 	
 	//	write all to disk?
 	void sync() {
-		FileTableEntry ftEnt = this.open("/","w");
-		byte[] theDirec = this.directory.directory2Bytes();
-		this.write(ftEnt, theDirec);
-		this.close(ftEnt);
-		this.superblock.sync();
+		FileTableEntry ftEnt = open("/","w");
+		byte[] theDirec = directory.directory2bytes();
+		write(ftEnt, theDirec);
+		close(ftEnt);
+		superblock.sync();
 	}
 	
 	/*
@@ -47,16 +47,16 @@ public class FileSystem {
 		//block 0 is superblock
 		//create superblock with max inode num = files
 		//inode blocks
-		this.directory = new Directory(this.superblock.totalInodes);
+		directory = new Directory(superblock.totalInodes);
 		//free blocks
-		this.filetable = new FileTable(this.directory);
+		filetable = new FileTable(directory);
 		return true;	
 	}
 	
 	FileTableEntry open( String filename, String mode ) {
 		
 		FileTableEntry ftEnt = filetable.falloc( filename, mode );
-		if( mode.equals( "w" ) {
+		if( mode.equals( "w" )) {
 			if( deallocAllBlocks( ftEnt ) == false )
 				return null;
 		}
@@ -96,23 +96,23 @@ public class FileSystem {
 			int buflen = buffer.length;
 
 			synchronized(ftEnt){
-				while(buflen > 0 && ftEnt.seekPtr < this.fsize(ftEnt)){
+				while(buflen > 0 && ftEnt.seekPtr < fsize(ftEnt)){
 					//get block to start reading from
-					int theblock = fnEnt.inode.findTargetBlock(ftEnt.seekPtr);
+					int theblock = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
 					if(theblock == -1){
 						//does not exists or failure
 						break;
 					}
 					//fill up one block in array
-					byte[] ablock = new byte[512]
-					SysLib.rawread(theblock, ablock)
+					byte[] ablock = new byte[512];
+					SysLib.rawread(theblock, ablock);
 
 					//find where the seekpoint is in relation to the block
 					int startPoint = ftEnt.seekPtr % 512;
 					//calc bytes read in from the block
 					int readBytes = 512 - startPoint;
 					//calc total bytes left in inode
-					int bytesLeft = this.fsize(ftEnt) - ftEnt.seekPoint;
+					int bytesLeft = fsize(ftEnt) - ftEnt.seekPtr;
 
 					int bytesReadIn = 0;
 
@@ -136,6 +136,7 @@ public class FileSystem {
 					buflen -= bytesReadIn;
 
 				}
+				return readin;
 			}
 		}else{
 			//bad input
@@ -157,7 +158,7 @@ public class FileSystem {
 					int theBlock = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
 					//if block does not exist, create it
 					if(theBlock == -1){
-						short newBlock = (short)this.superblock.getFreeBlock();
+						short newBlock = (short)superblock.getFreeBlock();
 						//init new block
 						theBlock = newBlock;
 					}
@@ -208,7 +209,7 @@ public class FileSystem {
 			//if files reference this inode
 			return false;
 		}else{
-			//TODO
+			return true;
 		}
 	}
 	
@@ -218,10 +219,10 @@ public class FileSystem {
 	*/
 	boolean delete( String filename ) {
 		//open to dealloc blocks - this updates the inode
-		FileTableEntry entry = this.open(filename, "w");
+		FileTableEntry entry = open(filename, "w");
 		short info = entry.iNumber;
 		//close the entry and return if it closes or not
-		return this.close(entry) && this.directory.ifree(info);
+		return close(entry) && directory.ifree(info);
 		
 	}
 	
@@ -234,7 +235,7 @@ public class FileSystem {
 	*/
 	int seek( FileTableEntry ftEnt, int offset, int whence ) {
 		synchronized(ftEnt){
-			switch whence{
+			switch (whence){
 				case SEEK_SET:
 					ftEnt.seekPtr = offset;
 					break;
@@ -242,10 +243,11 @@ public class FileSystem {
 					ftEnt.seekPtr += offset;
 					break;
 				case SEEK_END:
-					ftEnt.seekPtr = this.fsize(ftEnt) + offset;
+					ftEnt.seekPtr = fsize(ftEnt) + offset;
 					break;
 
 			}
+			return ftEnt.seekPtr;
 		}
 		
 	}
