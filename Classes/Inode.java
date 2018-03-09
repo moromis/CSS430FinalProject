@@ -58,7 +58,8 @@ public class Inode {
    
 		int blockNumber = 1 + iNumber / 16;
 		byte [] data = new byte[Disk.blockSize];
-		int offset = ( iNumber % 16) * 32;
+		SysLib.rawread( blockNumber, data );
+		int offset = ( iNumber % 16 ) * 32;
 		
 		// fill the temp data block with the Inode data
 		SysLib.int2bytes( length, data, offset );
