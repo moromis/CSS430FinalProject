@@ -84,11 +84,11 @@ public class Directory {
       Going to assume that data will be separated by maxInumber and maxChars and that all the file sizes come before
       the file name.*/
 
-      byte data[] = new byte[((maxInumber * 4) + (maxInumber * maxChars) + 1)];
+      byte data[] = new byte[((maxInumber * 4) + (maxInumber * maxChars) + 4)];
 
       //Loads all of the file sizes into the byte array
       for (int i = 0; i < maxInumber; i++) {
-         data[i] = (byte) fsize[i];//TODO: Implement properly with SysLib calls
+         SysLib.int2bytes(fsize[i], data, i * 4);
       }
 
       int index = 0;
@@ -98,8 +98,8 @@ public class Directory {
             data[maxInumber + index++] = (byte) fnames[i][j];
          }
       }
-
-      data[((maxInumber * 4) + (maxInumber * maxChars) + 1)] = fileCounter; 
+      
+      SysLib.int2bytes(fileCounter, data, ((maxInumber * 4) + (maxInumber * maxChars) + 1));
 
       return data;
    }
