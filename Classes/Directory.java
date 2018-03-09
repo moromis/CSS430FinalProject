@@ -174,4 +174,3 @@ public class Directory {
 	  //return -1 if no inode is associated with the filename - can happen
       return -1;//TODO: How to associate a filename with an inode?
    }
-}

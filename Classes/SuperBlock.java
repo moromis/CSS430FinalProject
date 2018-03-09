@@ -29,7 +29,7 @@ public class SuperBlock {
 		} else {
 			//need to format disk
 			totalBlocks = diskSize;
-			format( defaultInodeBlocks );
+			SysLib.format( defaultInodeBlocks );
 		}
 	}
 	
