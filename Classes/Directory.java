@@ -15,6 +15,7 @@ public class Directory {
    private char fnames[][];    // each element stores a different file name.
    private int maxInumber = 0;
    private int fileCounter = 0;
+   private FileTable ft;
 
    public Directory( int maxInumber ) { // directory constructor
 
@@ -31,6 +32,8 @@ public class Directory {
       root.getChars( 0, fsize[0], fnames[0], 0 ); // fnames[0] includes "/"
 	  
 	  fileCounter++;
+
+     ft = new FileTable(this);
    }
 
    /** This method reads in a byte array of data from the disk
@@ -50,16 +53,18 @@ public class Directory {
 
       //retrieves all of the file sizes
       for (int i = 0; i < maxInumber; i++) {
-         fsize[i] = data[i];
+         fsize[i] = SysLib.bytes2int(data, i * 4);
       }
 
       int index = 0;
       //retrieves the character array
       for (int i = 0; i < maxInumber; i++) {
          for (int j = 0; j < maxChars; j++) {
-            fnames[i][j] = (char) fsize[maxInumber + index++];
+            fnames[i][j] = (char) fsize[(maxInumber * 4) + (index++)];
          }
       }
+
+      fileCounter = SysLib.bytes2int(data, ((maxInumber * 4) + (maxInumber * maxChars) + 1));
    }
 
    /** This method writes the directory information into a byte array to be
@@ -79,7 +84,7 @@ public class Directory {
       Going to assume that data will be separated by maxInumber and maxChars and that all the file sizes come before
       the file name.*/
 
-      byte data[] = new byte[maxInumber + (maxInumber * maxChars)];
+      byte data[] = new byte[((maxInumber * 4) + (maxInumber * maxChars) + 1)];
 
       //Loads all of the file sizes into the byte array
       for (int i = 0; i < maxInumber; i++) {
@@ -93,6 +98,8 @@ public class Directory {
             data[maxInumber + index++] = (byte) fnames[i][j];
          }
       }
+
+      data[((maxInumber * 4) + (maxInumber * maxChars) + 1)] = fileCounter; 
 
       return data;
    }
@@ -110,17 +117,9 @@ public class Directory {
      fileCounter++;
      Inode newInode = new Inode();
 
-     //determine if there is space for the inode
-	  if (true) {
-         //There is no inode available so return an error message
-         return -1;
-     } else {
-         //There is an inode available so assign the inode to the file
-         // and return the inode number
+     FileTableEntry fte = new FileTableEntry(newInode, newInode.getIndexBlockNumber(), filename);
 
-         /*TODO: Assign the inode to the file.*/
-         return newInode.getIndexBlockNumber();
-     }
+     return fte.iNumber;
 
 	  //TODO: allocate an inode number? how to do?
 	  //from slides: create new inode: check if there's a free inode and assign it to the file,
