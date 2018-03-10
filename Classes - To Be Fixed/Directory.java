@@ -134,11 +134,20 @@ public class Directory {
       // deallocates this inumber (inode number)
       // the corresponding file will be deleted.
 	  
-	  if(iNumber == 0) return false; //don't ever free the root directory
-	  
-	  String thefilename = "";	//TODO get the file name
-	  SysLib.delete(thefilename);
-     return false;
+	  if(iNumber <= 2 || iNumber > maxInumber) return false; //invalid delete
+
+     //clear the fnames of the file name characters
+     for (int i = 0; i < maxChars; i++) {
+         fnames[iNumber] = null;
+     }
+
+     //one less file now
+     fileCounter--;
+
+     //nothing there so size of zero
+     fsize[iNumber] = 0;
+
+     return true;
    }
 
    /** This method returns the inode number that corresponds with the file name.
@@ -152,13 +161,13 @@ public class Directory {
 	  
       //get the filname as an array of characters
       //assumes that file names are very different from each other
-      int index = 0;
+      short index = 0;
       boolean found = false;
       char[] charFilename = filename.toCharArray();
 
       //loop over the entire array of filenames
-      for (int i = 0; i < maxInumber; i++) {
-         for (int j = 0; j < filename.length(); j++) {
+      for (short i = 0; i < maxInumber; i++) {
+         for (short j = 0; j < filename.length(); j++) {
 
             //if the characters are not the same, skip this row
             if (charFilename[j] != fnames[i][j]) {
@@ -173,7 +182,7 @@ public class Directory {
          
          //found the filename so return the inode number
          if (found) {
-            index = i + 3;
+            index = (short) (i + 3);
             return index;
          }
 
