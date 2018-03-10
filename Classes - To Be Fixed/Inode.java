@@ -177,6 +177,7 @@ public class Inode {
 		
 		//translate the offset into a block number
 		int index = (int)Math.floor(offset / Disk.blockSize);
+		System.err.println(offset + " " + index);
 		
 		//find the corresponding block using the index
 		if(index >= 0){
