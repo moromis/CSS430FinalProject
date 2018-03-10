@@ -70,7 +70,6 @@ public class FileTable {
 				//create a new inode for the file
 				inode = new Inode( iNumber );
 			  
-			  
 				if( mode.equals( "r" ) ) {
 				  
 					if ( inode.flag == 2 ) break; //read: no need to wait
@@ -82,8 +81,7 @@ public class FileTable {
 						iNumber = -1; // no more open
 						return null;
 					}
-				}
-				  
+					
 				} else if ( mode.equals( "w" ) ) {
 				  
 					if ( inode.flag == 2 ) break; //read: no need to wait
@@ -95,9 +93,9 @@ public class FileTable {
 						iNumber = -1; // no more open
 						return null;
 					}
-				  
-			  } //TODO: other modes? "w+" and "a" ?
-		  }
+					  
+				} //TODO: other modes? "w+" and "a" ?
+			}
 		}
 		  
 		inode.count++;
