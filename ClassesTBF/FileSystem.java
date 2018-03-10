@@ -11,13 +11,15 @@ public class FileSystem {
 	private SuperBlock superblock;
 	private Directory directory;
 	private FileTable filetable;
+	private boolean debug;
 	
-	public FileSystem( int diskBlocks ) {
+	public FileSystem( int diskBlocks, boolean dbg ) {
 		
-		superblock = new SuperBlock( diskBlocks );
-		// directory = new Directory ( superblock.totalInodes );
-		directory = new Directory ( 48 );
-		filetable = new FileTable( directory );
+		debug = dbg;
+		
+		superblock = new SuperBlock( diskBlocks, debug );
+		directory = new Directory ( superblock.totalInodes, debug );
+		filetable = new FileTable( directory, debug );
 		
 		//read the "/" file from diskBlocks
 		FileTableEntry dirEnt = open( "/", "r" );
@@ -46,51 +48,11 @@ public class FileSystem {
 	*/
 	boolean format( int files ) {
 
-		//instantiate superblock
-		superblock = new SuperBlock( files * 512 );
-		
-		//set the total number of inodes in the superblock (equal to files passed in)
-		superblock.totalInodes = files;
-		
-		//figure out the first free block
-		short firstFreeBlock = (short)(Math.ceil((32 * files) / 512) + 1);
-		
-		//set the first free block pointer in the superblock object
-		superblock.freeList = firstFreeBlock;
-		
-		//set the total number of blocks for the system (only as many as needed)
-		superblock.totalBlocks = 1000;
-		
-		//sync the superblock
-		superblock.sync();
-		
-		//inode blocks
-		for(short i = 0; i < files; i++){
-			
-			//create files number of inodes
-			Inode inode = new Inode();
-			inode.toDisk(i);
-		}
-		
-		//free blocks
-		for(short i = 0; i < files; i++){
-			
-			//read in first empty, non-pointed block
-			byte[] data = new byte[512];
-			SysLib.rawread(firstFreeBlock + i, data);
-			
-			//for bytes indeces 509 - 510 (max index is 511), write a pointer short
-			//to the next free block
-			int offset = 509;
-			SysLib.short2bytes( (short)(firstFreeBlock + i + 1), data, offset );
-			
-			//write the block back to disk
-			SysLib.rawwrite(firstFreeBlock + i, data);
-		}
+		superblock.format(files);
 		
 		//create the directory and filetable objects
-		directory = new Directory(files);
-		filetable = new FileTable(directory);
+		directory = new Directory(files, debug);
+		filetable = new FileTable(directory, debug);
 		
 		return true;	
 	}
@@ -98,10 +60,14 @@ public class FileSystem {
 	FileTableEntry open( String filename, String mode ) {
 		
 		FileTableEntry ftEnt = filetable.falloc( filename, mode );
+		
 		if( mode.equals( "w" )) {
 			if( deallocAllBlocks( ftEnt ) == false )
 				return null;
 		}
+		
+		if(debug) System.err.println("**** FileSystem open:" + ftEnt);
+		
 		return ftEnt;
 	}
 	
@@ -114,14 +80,14 @@ public class FileSystem {
 	*/
 	boolean close( FileTableEntry ftEnt ) {
 		//be th eonly one touching the file
-		synchronized(ftEnt){
-			//decrement # of users
-			ftEnt.count--;
-			if(ftEnt.count > 0){
-				//return true if other people are using the file
-				return true;
-			}
-		}
+		// synchronized(ftEnt){
+			// decrement # of users
+			// ftEnt.count--;
+			// if(ftEnt.count > 0){
+				// return true if other people are using the file
+				// return true;
+			// }
+		// }
 		//if you are the last one to use the file save everything
 		return filetable.ffree(ftEnt);
 	}
@@ -132,22 +98,39 @@ public class FileSystem {
 	*	returns -1 in fail
 	*/
 	int read( FileTableEntry ftEnt, byte[] buffer ) {
+		
+		if(debug) System.err.println("**** FileSystem read: ftEnt: " + ftEnt + " and mode: " + ftEnt.mode);
+		
 		//make sure its the right mode
 		if(ftEnt.mode == "r" || ftEnt.mode == "w+"){
+			
 			int readin = 0;
 			int buflen = buffer.length;
+			
+			if(debug) System.err.println("**** FileSystem read: beginning: seekPtr: " + ftEnt.seekPtr + " readin: " + readin + " buflen: " + buflen);
+			
+			System.err.println("**** FileSystem read: beginning: fsize of ftEnt: " + fsize(ftEnt));
 
 			synchronized(ftEnt){
 				while(buflen > 0 && ftEnt.seekPtr < fsize(ftEnt)){
+					
 					//get block to start reading from
-					int theblock = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
-					if(theblock == -1){
+					int theBlock = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
+					
+					if(debug) System.err.println("**** FileSystem read: block initially: " + theBlock);
+					
+					if(theBlock == -1){
 						//does not exists or failure
 						break;
 					}
+					
+					if(debug) System.err.println("**** FileSystem read: block: " + theBlock + " given seekPtr: " + ftEnt.seekPtr);
+					
 					//fill up one block in array
-					byte[] ablock = new byte[512];
-					SysLib.rawread(theblock, ablock);
+					byte[] aBlock = new byte[512];
+					SysLib.rawread(theBlock, aBlock);
+					
+					if(debug) System.err.println("**** FileSystem read: just read in aBlock: " + aBlock[0] + ", " + aBlock[1] + ", " + aBlock[2]);
 
 					//find where the seekpoint is in relation to the block
 					int startPoint = ftEnt.seekPtr % 512;
@@ -170,19 +153,30 @@ public class FileSystem {
 					}
 
 					//copy block buffer to output buffer
-					System.arraycopy(ablock, startPoint, buffer, readin, bytesReadIn);
+					System.arraycopy(aBlock, startPoint, buffer, readin, bytesReadIn);
+					
+					if(debug) System.err.println("**** FileSystem read: first few values of aBlock now that we copied to it: " + aBlock[0] + ", " + aBlock[1] + ", " + aBlock[2]);
+					if(debug) System.err.println("**** FileSystem read: first few values of the passed buffer now that we copied to it: " + buffer[0] + ", " + buffer[1] + ", " + buffer[2]);
 
 					//update values
 					ftEnt.seekPtr += bytesReadIn;
 					readin += bytesReadIn;
 					buflen -= bytesReadIn;
+					
+					if(debug) System.err.println("**** FileSystem read: end of one read: seekPtr: " + ftEnt.seekPtr + " readin: " + readin + " buflen: " + buflen);
 
 				}
+				
+				if(debug) System.err.println("**** FileSystem read: returning readin: " + readin );
+				
 				return readin;
 			}
+			
 		}else{
+			
 			//bad input
 			return -1;
+			
 		}		
 	}
 	
@@ -191,29 +185,54 @@ public class FileSystem {
 	*	returns number of bytes written
 	*/
 	int write( FileTableEntry ftEnt, byte[] buffer ) {
+		
+		
 		if(ftEnt.mode == "w" || ftEnt.mode == "w+" || ftEnt.mode == "a"){
-			int written = 0;
-			int buflen = buffer.length;
 			
 			synchronized(ftEnt){
+				
+				int written = 0;
+				int buflen = buffer.length;
+				
 				while(buflen > 0){
+					
+					//figure out what block to write to in the inode based on the seek pointer
 					int theBlock = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
+					
 					//if block does not exist, create it
 					if(theBlock == -1){
+						
+						//get the next free block
 						short newBlock = (short)superblock.getFreeBlock();
-						//init new block
 						theBlock = newBlock;
+						
+						//put the block in the inode
+						ftEnt.inode.setIndexBlock(newBlock);
 					}
+					
+					if(debug) System.err.println("**** FileSystem write: block: " + theBlock + " given seekPtr: " + ftEnt.seekPtr);
+					
+					//create a buffer
 					byte[] aBlock = new byte[512];
+					
+					//decide where to start writing
 					int startPoint = ftEnt.seekPtr % 512;
 					int bytesToWrite = 512 - startPoint;
+					
+					if(debug) System.err.println("**** FileSystem write: startPoint: " + startPoint + " bytesToWrite: " + bytesToWrite);
 
 					//calc the ammount of bytes written
 					//either buflen if end of buffer, or bytesToWrite
 					int bytesWritten = Math.min(bytesToWrite, buflen);
+					
+					if(debug) System.err.println("**** FileSystem write: bytesWritten: " + bytesWritten);
+					
 					//copy buffer to aBlock
 					System.arraycopy(buffer, written, aBlock, startPoint, bytesWritten);
+					
 					//write to block
+					if(debug) System.err.println("**** FileSystem write: before rawwrite: theBlock: " + theBlock);
+					if(debug) System.err.println("**** FileSystem write: first few values of aBlock just before we write to it: " + aBlock[0] + ", " + aBlock[1] + ", " + aBlock[2]);
 					SysLib.rawwrite(theBlock, aBlock);
 					ftEnt.seekPtr += bytesWritten;
 					written += bytesWritten;
@@ -229,9 +248,12 @@ public class FileSystem {
 				ftEnt.inode.toDisk(ftEnt.iNumber);
 				return written;
 			}
+			
 		}else{
+			
 			//fail
 			return -1;
+			
 		}
 		
 	}

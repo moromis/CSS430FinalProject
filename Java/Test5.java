@@ -98,7 +98,7 @@ class Test5 extends Thread {
 
   private boolean test3( ) {
     //.............................................."
-    SysLib.cout( "3: size = write( fd, buf[16] )...." );
+    SysLib.cout( "3: size = write( fd, buf[16] )....\n" );
     for ( byte i = 0; i < 16; i++ )
       buf16[i] = i;
     size = SysLib.write( fd, buf16 );

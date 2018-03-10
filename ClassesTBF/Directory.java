@@ -16,27 +16,30 @@ public class Directory {
    private int maxInumber = 0;
    private int fileCounter = 0;
    private FileTable ft;
+   private boolean debug;
 
-   public Directory( int maxInum ) { // directory constructor
+	public Directory( int maxInum, boolean dbg ) { // directory constructor
 
-	System.err.println(maxInum);
+		debug = dbg;
+	
+		if(debug) System.err.println("Directory: maxInumber received: " + maxInum);
    
-      maxInumber = maxInum;
+		maxInumber = maxInum;
    
-      fsize = new int[maxInumber];     // maxInumber = max files
+		fsize = new int[maxInumber];     // maxInumber = max files
 	  
-      for ( int i = 0; i < maxInumber; i++ ) 
-         fsize[i] = 0;                 // all file size initialized to 0
+		for ( int i = 0; i < maxInumber; i++ ) 
+			fsize[i] = 0;                 // all file size initialized to 0
 	 
-      fnames = new char[maxInumber][maxChars];
-      String root = "/";                // entry(inode) 0 is "/"
-      fsize[0] = root.length( );        // fsize[0] is the size of "/".
-      root.getChars( 0, fsize[0], fnames[0], 0 ); // fnames[0] includes "/"
+		fnames = new char[maxInumber][maxChars];
+		String root = "/";                // entry(inode) 0 is "/"
+		fsize[0] = root.length( );        // fsize[0] is the size of "/".
+		root.getChars( 0, fsize[0], fnames[0], 0 ); // fnames[0] includes "/"
 	  
-	  fileCounter++;
+		fileCounter++;
 
-     ft = new FileTable(this);
-   }
+		// ft = new FileTable(this);
+	}
 
    /** This method reads in a byte array of data from the disk
    and changes it into a directory.
@@ -106,27 +109,32 @@ public class Directory {
       return data;
    }
 
-   /** This method allocates an inode for the new file.
-   @param filename : The name of the new file.
-   @return short : The address of the inode.*/
-   public short ialloc( String filename ) {
+	/** This method allocates an inode for the new file.
+	@param filename : The name of the new file.
+	@return short : The address of the inode.*/
+	public short ialloc( String filename ) {
 	   
-      // filename is the one of a file to be created.
-      // allocates a new inode number for this filename
+		// filename is the one of a file to be created.
+		// allocates a new inode number for this filename
 	  
-	  fsize[fileCounter] = filename.length();
-	  filename.getChars( 0, fsize[fileCounter], fnames[fileCounter], 0 );
-     fileCounter++;
-     Inode newInode = new Inode();
+		short inodeNum = (short)fileCounter;
+		fileCounter++;
+	  
+		fsize[inodeNum] = filename.length();
+		filename.getChars( 0, fsize[inodeNum], fnames[inodeNum], 0 );
+		Inode newInode = new Inode(inodeNum);
+		newInode.flag = 1;
+		newInode.toDisk(inodeNum);
+		
 
-     FileTableEntry fte = new FileTableEntry(newInode, newInode.getIndexBlockNumber(), filename);
+		// FileTableEntry fte = new FileTableEntry(newInode, newInode.getIndexBlockNumber(), filename);
 
-     return fte.iNumber;
+		return inodeNum;
 
-	  //TODO: allocate an inode number? how to do?
-	  //from slides: create new inode: check if there's a free inode and assign it to the file,
-	  //return inode number, otherwise return error (-1)
-   }
+		//TODO: allocate an inode number? how to do?
+		//from slides: create new inode: check if there's a free inode and assign it to the file,
+		//return inode number, otherwise return error (-1)
+	}
 
    /** This method frees up an inode using the supplied inode number.
    @param iNumber : The inode number to be freed up.
@@ -156,7 +164,10 @@ public class Directory {
    @param filename : The name of the file.
    @return short : The inode number.*/
    public short namei( String filename ) {
+	   
+	   
       if (filename.length() > maxChars) {
+		  if(debug) System.err.println("**** Directory namei: ERROR: filename too long");
          return -1;
       }
       // returns the inumber corresponding to this filename
@@ -184,8 +195,10 @@ public class Directory {
          
          //found the filename so return the inode number
          if (found) {
-            index = (short) (i + 3);
-            return index;
+            // index = (short) (i);
+			
+			 if(debug) System.err.println("**** Directory namei: returning inode num: " + index);
+            return (short)index;
          }
 
          //Search the next row
@@ -193,6 +206,8 @@ public class Directory {
       }
 
 	  //return -1 if no inode is associated with the filename - can happen
+	  
+	  if(debug) System.err.println("**** Directory namei: ERROR: couldn't find inode with filename");
       return -1;
    }
 }

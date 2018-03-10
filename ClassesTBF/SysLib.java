@@ -148,6 +148,8 @@ public class SysLib {
     public static int open(String fileName, String mode) {
         //List the arguments as an array
         String[] args = {fileName, mode};
+		
+		System.err.println("\n**** SysLib open: " + args[0] + " " + args[1]);
 
         return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.OPEN, 0, args);
     }
@@ -162,6 +164,9 @@ public class SysLib {
         if (fd < 3 || fd > 31) {
             return -1;
         }
+		
+		System.err.println("\n**** SysLib read: fd: " + fd);
+		
         return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.READBUF, fd, buffer);
     }
 
@@ -176,6 +181,8 @@ public class SysLib {
             return -1;
         }
 
+		System.err.println("\n**** SysLib write: fd: " + fd);
+		
         return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.WRITEBUF, fd, buffer);
     }
 

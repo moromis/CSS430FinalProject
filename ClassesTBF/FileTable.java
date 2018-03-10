@@ -4,8 +4,10 @@ public class FileTable {
 
    private Vector table;         // the actual entity of this file table
    private Directory dir;        // the root directory 
+   private boolean debug;
 
-	public FileTable( Directory directory ) { // constructor
+	public FileTable( Directory directory, boolean dbg ) { // constructor
+		debug = dbg;
 		table = new Vector( );     // instantiate a file (structure) table
 		dir = directory;           // receive a reference to the Director
 	}                             // from the file system
@@ -19,43 +21,50 @@ public class FileTable {
 		// immediately write back this inode to the disk
 		// return a reference to this file (structure) table entry
 
-	  /*
 	  
 		//preinitialize the inumber and inode	  
 		short iNumber = -1;
 		Inode inode = null;
 
 		//get the inumber associated with the filename
-	  iNumber = ( filename.equals( "/" ) ? 0 : dir.namei( filename ) );
+		iNumber = ( filename.equals( "/" ) ? 0 : dir.namei( filename ) );
+		
+		if(debug) System.err.println("**** FileTable falloc: iNumber: " + iNumber);
 	  
-	  if(iNumber >= 0){
-		  
-		  //create a new inode, which reads from disk to create itself (so doesn't really create a new one
-		  inode = new Inode( iNumber );
-		  
-		  FileTableEntry e = new FileTableEntry( inode, iNumber, mode );
-		  
-		  //if the file table entry isn't in the table, add it
-		  if(!table.contains(e)){
-			  
-			  table.addElement( e );
-			  
-		  }
-			  
-		  //increase the number of references to the inode, write it to disk,
-		  //and then return the file table entry
-		  inode.count++;
-		  inode.toDisk( iNumber );
-		  return e;
-
-	  }else{
-
-		return null;
-	
-	  }
+		if(iNumber < 0){
+			
+			iNumber = dir.ialloc(filename);
+			
+		}
+		
+		//create a new inode, which reads from disk to create itself (so doesn't really create a new one)
+		inode = new Inode( iNumber );
+		
+		if(debug) System.err.println("**** FileTable falloc: iNumber: " + iNumber + " new inode length: " + inode.length);
 	  
-	  */
+		FileTableEntry e = new FileTableEntry( inode, iNumber, mode );
+		
+		if(debug) System.err.println("**** FileTable falloc: new filetableentry: " + e);
 	  
+		//if the file table entry isn't in the table, add it
+		if(!table.contains(e)){
+		  
+			if(debug) System.err.println("**** FileTable falloc: e wasn't in table, adding.");
+			table.addElement( e );
+		  
+		}
+		  
+		//increase the number of references to the inode, write it to disk,
+		//and then return the file table entry
+		inode.count++;
+		inode.toDisk( iNumber );
+		
+		if(debug) System.err.println("**** FileTable falloc: " + e);
+		
+		return e;
+	  
+	  
+	  /*
 		short iNumber = -1;
 		Inode inode = null;
 	  
@@ -103,6 +112,77 @@ public class FileTable {
 		FileTableEntry e = new FileTableEntry( inode, iNumber, mode );
 		table.addElement( e );
 		return e;
+		
+		*/
+		
+		/*
+		
+		short iNumber = -1;
+        Inode inode = null;
+
+        while (true) {
+            //get inode number from file
+            iNumber = filename.equals("/") ? 0 : dir.namei(filename);
+
+            // check if file exists
+            if (iNumber >= 0) {
+                inode = new Inode(iNumber);
+                // if mode is read
+                if (mode.equals("r")) {
+                    //if file is being written to
+                    if (inode.flag != 0 && inode.flag != 1 ) {
+                        //wait until writing is done
+                        try {
+                            wait();
+                        }
+                        catch (InterruptedException e) { }
+                        continue;
+                    }
+                    //set flag to read
+                    inode.flag = 1;
+                    break;
+                }
+
+                if (inode.flag != 0 && inode.flag != 3)
+                {
+                    if(inode.flag == 1 || inode.flag==2)
+                    {
+                        inode.flag = (short)(inode.flag + 3);
+                        inode.toDisk(iNumber);
+                    }
+
+                    //wait until writing is done
+
+                    try
+                    {
+                        wait();
+                    }
+                    catch (InterruptedException e) { }
+                    continue;
+                }
+                inode.flag = 2;
+                break;
+            }
+            //if mode is read then return a null
+            if (mode.equals("r")) return null;
+
+            //create file
+            iNumber = dir.ialloc(filename);
+            inode = new Inode();
+            //set flag to write
+            inode.flag = 2;
+            break;
+        }
+
+        //write inode to disk
+        inode.count++;
+        inode.toDisk(iNumber);
+        //create filetable entry and return
+        FileTableEntry ftEnt = new FileTableEntry(inode, iNumber, mode);
+        table.addElement(ftEnt);
+        return ftEnt;
+		
+		*/
 	  
    }
 
@@ -123,7 +203,11 @@ public class FileTable {
 			  //to the disk
 			  Inode inode = e.inode;
 			  short iNumber = e.iNumber;
+			  inode.flag = 0;
 			  inode.count--;
+			  
+			  if(debug) System.err.println("**** FileTable: ffree: inode number: " + iNumber + " length: " + inode.length);
+			  
 			  inode.toDisk( iNumber );
 			  
 			  //remove the file table entry from the 

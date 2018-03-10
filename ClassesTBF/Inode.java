@@ -5,6 +5,8 @@ public class Inode {
    public int length;                             // file size in bytes
    public short count;                            // # file-table entries pointing to this
    
+   private final static boolean debug = true;
+   
    public short flag;                             
    // 0 = unused, 1 = used, 2 = read, 3 = write, 4 = to be deleted
    
@@ -84,7 +86,7 @@ public class Inode {
 	   
 	   //look for a free direct index
 		for(int i = 0; i < directSize; i++){
-			if(direct[i] == 0 && i != 0){
+			if(direct[i] == -1 && i != 0){
 				return direct[i - 1];
 			}
 		}
@@ -92,7 +94,7 @@ public class Inode {
 		//otherwise, the direct blocks are all taken up, so
 		//the latest block must be in indirect or the inode is full
 		
-		if(indirect != 0){
+		if(indirect != -1){
 			
 			//get the indirect block from memory
 			byte [] data = new byte[Disk.blockSize];
@@ -120,10 +122,21 @@ public class Inode {
    
    boolean setIndexBlock( short indexBlockNumber ) {
 		
+		if(debug) System.err.println("**** Inode: setIndexBlock: setting: " + indexBlockNumber);
+		
 		//look for a free direct index
 		for(int i = 0; i < directSize; i++){
-			if(direct[i] == 0){
+			if(direct[i] == -1){
 				direct[i] = indexBlockNumber;
+				
+				if(debug){ 
+					System.err.println("**** Inode: setIndexBlock:");
+					for(int j = 0; j < directSize; j++){
+						System.err.println("direct[" + j + "]: " + direct[j]);
+					}
+				}
+					
+				
 				return true;
 			}
 		}
@@ -131,7 +144,7 @@ public class Inode {
 		//otherwise, the direct blocks are all taken up, so
 		//we need to place this block in the indirect pointer
 		
-		if(indirect != 0){
+		if(indirect != -1){
 			
 			//if the indirect pointer is allocated, search it for a place to put
 			//the block
@@ -177,20 +190,32 @@ public class Inode {
 		
 		//translate the offset into a block number
 		int index = (int)Math.floor(offset / Disk.blockSize);
-		System.err.println(offset + " " + index);
+		if(debug) System.err.println("Inode: findTargetBlock: offset: " + offset + " block index: " + index);
 		
 		//find the corresponding block using the index
-		if(index - 1 >= 0){
+		if(index >= 0){
 			
 			//if the index is a direct block...
 			if(index < directSize){
 				
-				if(direct[offset] != 0){
+				if(debug) System.err.println("Inode: findTargetBlock: direct block was requested");
+				
+				if(direct[index] != -1){
+					
+					if(debug){ 
+						System.err.println("Inode: findTargetBlock: direct[index] != -1, going to return: " + direct[index]);
+						
+						for(int i = 0; i < directSize; i++){
+							System.err.println("direct[" + i + "]: " + direct[i]);
+						}
+					}
 					
 					//return the block
-					return direct[offset];
+					return direct[index];
 					
 				}else{
+					
+					if(debug) System.err.println("Inode: findTargetBlock: ERROR: direct[index] was 0");
 					
 					//if the direct block is unallocated return -1
 					return -1;
@@ -200,20 +225,26 @@ public class Inode {
 			//otherwise if the index is an indirect block	
 			}else if(index >= directSize && index < 256 + directSize){
 				
+				if(debug) System.err.println("Inode: findTargetBlock: block index: " + index + " appears to be an indirect block");
+				
 				//remove 11 from the block index - for instance if we're trying
 				//to find block index 12 (the 13th block), then really it's block index 1
 				//in the indirect pointer block
 				index -= directSize;
 				
-				if(indirect != 0){
+				if(debug) System.err.println("Inode: findTargetBlock: after adjusting for direct blocks, index = " + index);
+				
+				if(indirect != -1){
 					
 					//get the indirect block of pointers
 					byte [] data = new byte[Disk.blockSize];
 					SysLib.rawread( indirect, data );
-					short targetBlock = SysLib.bytes2short(data, offset);
+					short targetBlock = SysLib.bytes2short(data, index * 2);
+					
+					if(debug) System.err.println("Inode: findTargetBlock: indirect pointer exists, targetBlock: " + targetBlock);
 					
 					//return the correct block if it's been filled
-					if(targetBlock != 0){
+					if(targetBlock != -1){
 						
 						//return the block
 						return targetBlock;

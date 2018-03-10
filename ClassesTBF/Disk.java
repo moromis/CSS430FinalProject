@@ -54,7 +54,7 @@ public class Disk extends Thread {
 
 		if ( blockId < 0 || blockId > diskSize ) {
 			
-			SysLib.cerr( "threadOS: a wrong blockId for read\n" );
+			SysLib.cerr( "threadOS: a wrong blockId for read: " + blockId + "\n" );
 			return false;
 		}
 
@@ -74,7 +74,7 @@ public class Disk extends Thread {
 
 		if ( blockId < 0 || blockId > diskSize ) {
 			
-			SysLib.cerr( "threadOS: a wrong blockId for write\n" );
+			SysLib.cerr( "threadOS: a wrong blockId for write: " + blockId + "\n" );
 			return false;
 		}
 
