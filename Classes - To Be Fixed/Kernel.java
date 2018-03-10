@@ -216,6 +216,7 @@ public class Kernel
 			   
 					if( ( myTcb = scheduler.getMyTcb() ) != null ) {
 						String[] s = (String[])args;
+						System.err.println("Kernel OPEN: " + s[0] + " " + s[1]);
 						FileTableEntry ent = fs.open( s[0], s[1] );
 						int fd = myTcb.getFd( ent );
 						return fd;

@@ -19,6 +19,8 @@ public class FileTable {
       // immediately write back this inode to the disk
       // return a reference to this file (structure) table entry
 
+	  /*
+	  
 		//preinitialize the inumber and inode	  
 		short iNumber = -1;
 		Inode inode = null;
@@ -52,7 +54,7 @@ public class FileTable {
 	
 	  }
 	  
-	  /*
+	  */
 	  
 	  short iNumber = -1;
 	  Inode inode = null;
@@ -110,8 +112,6 @@ public class FileTable {
 		  FileTableEntry e = new FileTableEntry( inode, iNumber, mode );
 		  table.addElement( e );
 		  return e;
-	  
-	  */
 	  
    }
 

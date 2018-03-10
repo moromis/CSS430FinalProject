@@ -13,8 +13,10 @@ public class FileSystem {
 	private FileTable filetable;
 	
 	public FileSystem( int diskBlocks ) {
+		
 		superblock = new SuperBlock( diskBlocks );
-		directory = new Directory ( superblock.totalInodes );
+		// directory = new Directory ( superblock.totalInodes );
+		directory = new Directory ( 48 );
 		filetable = new FileTable( directory );
 		
 		//read the "/" file from diskBlocks
@@ -44,12 +46,52 @@ public class FileSystem {
 	*/
 	boolean format( int files ) {
 
-		//block 0 is superblock
-		//create superblock with max inode num = files
+		//instantiate superblock
+		superblock = new SuperBlock( files * 512 );
+		
+		//set the total number of inodes in the superblock (equal to files passed in)
+		superblock.totalInodes = files;
+		
+		//figure out the first free block
+		short firstFreeBlock = (short)(Math.ceil((32 * files) / 512) + 1);
+		
+		//set the first free block pointer in the superblock object
+		superblock.freeList = firstFreeBlock;
+		
+		//set the total number of blocks for the system (only as many as needed)
+		superblock.totalBlocks = 1000;
+		
+		//sync the superblock
+		superblock.sync();
+		
 		//inode blocks
-		directory = new Directory(superblock.totalInodes);
+		for(short i = 0; i < files; i++){
+			
+			//create files number of inodes
+			Inode inode = new Inode();
+			inode.toDisk(i);
+		}
+		
 		//free blocks
+		for(short i = 0; i < files; i++){
+			
+			//read in first empty, non-pointed block
+			byte[] data = new byte[512];
+			SysLib.rawread(firstFreeBlock + i, data);
+			
+			//for bytes indeces 509 - 510 (max index is 511), write a pointer short
+			//to the next free block
+			int offset = 509;
+			SysLib.short2bytes( (short)(firstFreeBlock + i + 1), data, offset );
+			
+			//write the block back to disk
+			SysLib.rawwrite(firstFreeBlock + i, data);
+		}
+		
+		//create the directory and filetable objects
+		directory = new Directory(files);
 		filetable = new FileTable(directory);
+		
 		return true;	
 	}
 	
@@ -222,7 +264,7 @@ public class FileSystem {
 		FileTableEntry entry = open(filename, "w");
 		short info = entry.iNumber;
 		//close the entry and return if it closes or not
-		return close(entry) && directory.ifree(info);
+		return close(entry) && filetable.ffree(entry) && directory.ifree(info);
 		
 	}
 	

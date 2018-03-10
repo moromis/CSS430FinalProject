@@ -25,11 +25,12 @@ public class SuperBlock {
 		
 		if( totalBlocks == diskSize && totalInodes > 0 && freeList >= 2 ) {
 			// disk contents are valid
+			System.err.println("superblock is all good! no formatting needed!");
 			return;
 		} else {
 			//need to format disk
 			totalBlocks = diskSize;
-			SysLib.format( defaultInodeBlocks );
+			// SysLib.format( defaultInodeBlocks );
 		}
 	}
 	

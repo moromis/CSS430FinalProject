@@ -17,9 +17,11 @@ public class Directory {
    private int fileCounter = 0;
    private FileTable ft;
 
-   public Directory( int maxInumber ) { // directory constructor
+   public Directory( int maxInum ) { // directory constructor
 
-      this.maxInumber = maxInumber;
+	System.err.println(maxInum);
+   
+      maxInumber = maxInum;
    
       fsize = new int[maxInumber];     // maxInumber = max files
 	  
