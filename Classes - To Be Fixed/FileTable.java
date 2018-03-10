@@ -79,7 +79,7 @@ public class FileTable {
 				  else if ( inode.flag == 3 ) { //write: wait for a write to exit
 				  
 					try { 
-						wait() 
+						wait() ;
 					} catch( InterruptedException e ) {
 						
 						iNumber = -1; // no more open
@@ -96,7 +96,7 @@ public class FileTable {
 				  else if ( inode.flag == 3 ) { //write: wait for a write to exit
 				  
 					try { 
-						wait() 
+						wait() ;
 					} catch( InterruptedException e ) {
 						
 						iNumber = -1; // no more open
