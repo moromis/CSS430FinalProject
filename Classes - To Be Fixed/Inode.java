@@ -179,7 +179,7 @@ public class Inode {
 		int index = (int)Math.floor(offset / Disk.blockSize);
 		
 		//find the corresponding block using the index
-		if(index >= 0){
+		if(index - 1 >= 0){
 			
 			//if the index is a direct block...
 			if(index < directSize){
