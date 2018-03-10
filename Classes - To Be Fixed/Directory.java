@@ -155,23 +155,33 @@ public class Directory {
       int index = 0;
       boolean found = false;
       char[] charFilename = filename.toCharArray();
+
+      //loop over the entire array of filenames
       for (int i = 0; i < maxInumber; i++) {
          for (int j = 0; j < filename.length(); j++) {
+
+            //if the characters are not the same, skip this row
             if (charFilename[j] != fnames[i][j]) {
                found = false;
                break;
-            }
-            else {
+
+            } else { //the characters are the same so possibly a match
+
                found = true;
             }
          }
-         index++;
+         
+         //found the filename so return the inode number
          if (found) {
-            break;
+            index = i + 3;
+            return index;
          }
+
+         //Search the next row
+         index++;
       }
 
 	  //return -1 if no inode is associated with the filename - can happen
-      return -1;//TODO: How to associate a filename with an inode?
+      return -1;
    }
 }
