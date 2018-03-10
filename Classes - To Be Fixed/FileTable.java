@@ -62,7 +62,7 @@ public class FileTable {
 	  while( true ) {
 		  
 		  //get the inumber for the filename
-		  iNumber = ( filename.equals( "/" ) ? 0 : dir.namei( fname ) );
+		  iNumber = ( filename.equals( "/" ) ? 0 : dir.namei( filename ) );
 		  
 		  //if it's not the root directory
 		  if( iNumber >= 0 ) {
@@ -71,7 +71,7 @@ public class FileTable {
 			  inode = new Inode( iNumber );
 			  
 			  
-			  if( mode.compareTo( "r" ) ) {
+			  if( mode.equals( "r" ) ) {
 				  
 				  if ( inode.flag == 2 )
 					  break; //read: no need to wait
@@ -87,7 +87,7 @@ public class FileTable {
 					}
 				  }
 				  
-			  } else if ( mode.compareTo( "w" ) ) {
+			  } else if ( mode.equals( "w" ) ) {
 				  
 				  //TODO: just made this the same as read, what to actually do here?
 				   if ( inode.flag == 2 )
@@ -104,14 +104,16 @@ public class FileTable {
 					}
 				  }
 				  
-			  }//TODO: other modes? "w+" and "a" ?
+			  } //TODO: other modes? "w+" and "a" ?
 		  }
 		  
-		  inode.count++;
-		  inode.toDisk( iNumber );
-		  FileTableEntry e = new FileTableEntry( inode, iNumber, mode );
-		  table.addElement( e );
-		  return e;
+	  }
+		  
+	  inode.count++;
+	  inode.toDisk( iNumber );
+	  FileTableEntry e = new FileTableEntry( inode, iNumber, mode );
+	  table.addElement( e );
+	  return e;
 	  
    }
 
