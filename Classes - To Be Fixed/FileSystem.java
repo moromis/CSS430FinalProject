@@ -264,7 +264,7 @@ public class FileSystem {
 		FileTableEntry entry = open(filename, "w");
 		short info = entry.iNumber;
 		//close the entry and return if it closes or not
-		return close(entry) && directory.ifree(info);
+		return close(entry) && filetable.ffree(entry) && directory.ifree(info);
 		
 	}
 	
