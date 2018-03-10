@@ -5,19 +5,19 @@ public class FileTable {
    private Vector table;         // the actual entity of this file table
    private Directory dir;        // the root directory 
 
-   public FileTable( Directory directory ) { // constructor
-      table = new Vector( );     // instantiate a file (structure) table
-      dir = directory;           // receive a reference to the Director
-   }                             // from the file system
+	public FileTable( Directory directory ) { // constructor
+		table = new Vector( );     // instantiate a file (structure) table
+		dir = directory;           // receive a reference to the Director
+	}                             // from the file system
 
-   // major public methods
-   public synchronized FileTableEntry falloc( String filename, String mode ) {
+	// major public methods
+	public synchronized FileTableEntry falloc( String filename, String mode ) {
 	   
-      // allocate a new file (structure) table entry for this file name
-      // allocate/retrieve and register the corresponding inode using dir
-      // increment this inode's count
-      // immediately write back this inode to the disk
-      // return a reference to this file (structure) table entry
+		// allocate a new file (structure) table entry for this file name
+		// allocate/retrieve and register the corresponding inode using dir
+		// increment this inode's count
+		// immediately write back this inode to the disk
+		// return a reference to this file (structure) table entry
 
 	  /*
 	  
@@ -56,64 +56,55 @@ public class FileTable {
 	  
 	  */
 	  
-	  short iNumber = -1;
-	  Inode inode = null;
+		short iNumber = -1;
+		Inode inode = null;
 	  
-	  while( true ) {
+		while( true ) {
 		  
-		  //get the inumber for the filename
-		  iNumber = ( filename.equals( "/" ) ? 0 : dir.namei( filename ) );
+			//get the inumber for the filename
+			iNumber = ( filename.equals( "/" ) ? 0 : dir.namei( filename ) );
 		  
-		  //if it's not the root directory
-		  if( iNumber >= 0 ) {
+			//if it's not the root directory
+			if( iNumber >= 0 ) {
 			  
-			  //create a new inode for the file
-			  inode = new Inode( iNumber );
+				//create a new inode for the file
+				inode = new Inode( iNumber );
 			  
 			  
-			  if( mode.equals( "r" ) ) {
+				if( mode.equals( "r" ) ) {
 				  
-				  if ( inode.flag == 2 )
-					  break; //read: no need to wait
+					if ( inode.flag == 2 ) break; //read: no need to wait
 				  
-				  else if ( inode.flag == 3 ) { //write: wait for a write to exit
-				  
-					try { 
-						wait() ;
-					} catch( InterruptedException e ) {
+					else if ( inode.flag == 3 ) //write: wait for a write to exit
+						try { wait() ; } catch( InterruptedException e ) {}
 						
+					else if( inode.flag == 4 ){
 						iNumber = -1; // no more open
 						return null;
 					}
-				  }
+				}
 				  
-			  } else if ( mode.equals( "w" ) ) {
+				} else if ( mode.equals( "w" ) ) {
 				  
-				  //TODO: just made this the same as read, what to actually do here?
-				   if ( inode.flag == 2 )
-					  break; //read: no need to wait
+					if ( inode.flag == 2 ) break; //read: no need to wait
 				  
-				  else if ( inode.flag == 3 ) { //write: wait for a write to exit
-				  
-					try { 
-						wait() ;
-					} catch( InterruptedException e ) {
+					else if ( inode.flag == 3 ) //write: wait for a write to exit
+						try { wait() ; } catch( InterruptedException e ) {}
 						
+					else if( inode.flag == 4 ){ //to be deleted flag
 						iNumber = -1; // no more open
 						return null;
 					}
-				  }
 				  
 			  } //TODO: other modes? "w+" and "a" ?
 		  }
+		}
 		  
-	  }
-		  
-	  inode.count++;
-	  inode.toDisk( iNumber );
-	  FileTableEntry e = new FileTableEntry( inode, iNumber, mode );
-	  table.addElement( e );
-	  return e;
+		inode.count++;
+		inode.toDisk( iNumber );
+		FileTableEntry e = new FileTableEntry( inode, iNumber, mode );
+		table.addElement( e );
+		return e;
 	  
    }
 
