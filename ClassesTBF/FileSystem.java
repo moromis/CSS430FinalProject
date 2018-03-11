@@ -89,7 +89,14 @@ public class FileSystem {
 			// }
 		// }
 		//if you are the last one to use the file save everything
-		return filetable.ffree(ftEnt);
+		// return filetable.ffree(ftEnt);
+		
+		if(ftEnt == null) return false;
+        synchronized (ftEnt) {
+            ftEnt.count--;
+            if(ftEnt.count > 0) return true;
+            return filetable.ffree(ftEnt);
+        }
 	}
 	
 	/*
@@ -293,12 +300,6 @@ public class FileSystem {
 	}
 	
 	private boolean deallocAllBlocks( FileTableEntry ftEnt ) {
-		/*if(ftEnt.inode.count != 1){
-			//if files reference this inode
-			return false;
-		}else{
-			return true;
-		}*/
 		
 		if(ftEnt != null){
 			
@@ -340,7 +341,7 @@ public class FileSystem {
 		FileTableEntry entry = open(filename, "w");
 		short info = entry.iNumber;
 		//close the entry and return if it closes or not
-		return close(entry) && filetable.ffree(entry) && directory.ifree(info);
+		return close(entry) && directory.ifree(info);
 		
 	}
 	

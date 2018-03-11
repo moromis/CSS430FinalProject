@@ -144,20 +144,29 @@ public class Directory {
       // deallocates this inumber (inode number)
       // the corresponding file will be deleted.
 	  
-	  if(iNumber <= 2 || iNumber > maxInumber) return false; //invalid delete
+	  // if(iNumber <= 2 || iNumber > maxInumber) return false; //invalid delete
 
-     //clear the fnames of the file name characters
-     for (int i = 0; i < maxChars; i++) {
-         fnames[iNumber] = null;
-     }
+     // clear the fnames of the file name characters
+     // for (int i = 0; i < maxChars; i++) {
+         // fnames[iNumber] = null;
+     // }
 
-     //one less file now
-     fileCounter--;
+     // one less file now
+     // fileCounter--;
 
-     //nothing there so size of zero
-     fsize[iNumber] = 0;
+     // nothing there so size of zero
+     // fsize[iNumber] = 0;
 
-     return true;
+     // return true;
+	 
+        if(fsize[iNumber] > 0) {
+			
+            fsize[iNumber] = 0;
+            return true;
+			
+        }
+		
+		return false;
    }
 
    /** This method returns the inode number that corresponds with the file name.

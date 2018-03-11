@@ -21,6 +21,64 @@ public class FileTable {
 		// immediately write back this inode to the disk
 		// return a reference to this file (structure) table entry
 
+		
+		  short iNumber = -1;
+        Inode inode = null;
+
+        while (true) {
+			
+            //get inode number from file
+            iNumber = filename.equals("/") ? 0 : dir.namei(filename);
+
+            //if the file exists (an inode has been allocated for it)
+            if (iNumber >= 0) {
+				
+				//open the inode associated with the file
+                inode = new Inode(iNumber);
+				
+                //if mode is read
+                if (mode.equals("r")) {
+					
+                    //if file is being written to
+                    if (inode.flag != inode.UNUSED && inode.flag != inode.USED ) {
+						
+                        //wait until writing is done
+                        try { wait(); } catch (InterruptedException e) { }
+                        continue;
+                    }
+					
+                    //set flag to used
+                    inode.flag = inode.USED;
+                    break;
+					
+                }
+				
+                inode.flag = inode.READ;
+                break;
+            }
+			
+            //if mode is read then return a null
+            if (mode.equals("r")) return null;
+			
+            //create file
+            iNumber = dir.ialloc(filename);
+            inode = new Inode();
+			
+            //set flag to write
+            inode.flag = inode.READ;
+            break;
+        }
+
+        //write inode to disk
+        inode.count++;
+        inode.toDisk(iNumber);
+        //create filetable entry and return
+        FileTableEntry ftEnt = new FileTableEntry(inode, iNumber, mode);
+        table.addElement(ftEnt);
+        return ftEnt;
+		
+		
+		/*
 	  
 		//preinitialize the inumber and inode	  
 		short iNumber = -1;
@@ -62,7 +120,7 @@ public class FileTable {
 		if(debug) System.err.println("**** FileTable falloc: " + e);
 		
 		return e;
-	  
+	  */
 	  
 	  /*
 		short iNumber = -1;

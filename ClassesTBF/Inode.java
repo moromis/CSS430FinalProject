@@ -1,18 +1,24 @@
 public class Inode {
-   private final static int iNodeSize = 32;       // fix to 32 bytes
-   private final static int directSize = 11;      // # direct pointers
+	
+	private final static int iNodeSize = 32;       // fix to 32 bytes
+	private final static int directSize = 11;      // # direct pointers
 
-   public int length;                             // file size in bytes
-   public short count;                            // # file-table entries pointing to this
+	public int length;                             // file size in bytes
+	public short count;                            // # file-table entries pointing to this
    
-   private final static boolean debug = false;
+	private final static boolean debug = false;
    
-   public short flag;                             
-   // 0 = unused, 1 = used, 2 = read, 3 = write, 4 = to be deleted
+	public short flag;                             
+   
+	public final static short UNUSED = 0;
+	public final static short USED = 1;
+	public final static short READ = 2;
+	public final static short WRITE = 3;
+	public final static short TOBEDELETED = 4;
    
    
-   public short direct[] = new short[directSize]; // direct pointers
-   public short indirect;                         // a indirect pointer
+	public short direct[] = new short[directSize]; // direct pointers
+	public short indirect;                         // a indirect pointer
    
    /*
    
