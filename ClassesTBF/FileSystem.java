@@ -130,7 +130,7 @@ public class FileSystem {
 					byte[] aBlock = new byte[512];
 					SysLib.rawread(theBlock, aBlock);
 					
-					if(debug) System.err.println("**** FileSystem read: just read in aBlock: " + aBlock[0] + ", " + aBlock[1] + ", " + aBlock[2]);
+					// if(debug) System.err.println("**** FileSystem read: just read in aBlock: " + aBlock[0] + ", " + aBlock[1] + ", " + aBlock[2]);
 
 					//find where the seekpoint is in relation to the block
 					int startPoint = ftEnt.seekPtr % 512;
@@ -155,8 +155,8 @@ public class FileSystem {
 					//copy block buffer to output buffer
 					System.arraycopy(aBlock, startPoint, buffer, readin, bytesReadIn);
 					
-					if(debug) System.err.println("**** FileSystem read: first few values of aBlock now that we copied to it: " + aBlock[0] + ", " + aBlock[1] + ", " + aBlock[2]);
-					if(debug) System.err.println("**** FileSystem read: first few values of the passed buffer now that we copied to it: " + buffer[0] + ", " + buffer[1] + ", " + buffer[2]);
+					// if(debug) System.err.println("**** FileSystem read: first few values of aBlock now that we copied to it: " + aBlock[0] + ", " + aBlock[1] + ", " + aBlock[2]);
+					// if(debug) System.err.println("**** FileSystem read: first few values of the passed buffer now that we copied to it: " + buffer[0] + ", " + buffer[1] + ", " + buffer[2]);
 
 					//update values
 					ftEnt.seekPtr += bytesReadIn;
@@ -186,6 +186,7 @@ public class FileSystem {
 	*/
 	int write( FileTableEntry ftEnt, byte[] buffer ) {
 		
+		/**/
 		
 		if(ftEnt.mode == "w" || ftEnt.mode == "w+" || ftEnt.mode == "a"){
 			
@@ -199,11 +200,12 @@ public class FileSystem {
 					//figure out what block to write to in the inode based on the seek pointer
 					int theBlock = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
 					
-					//if block does not exist, create it
+					// if block does not exist, create it
 					if(theBlock == -1){
 						
-						//get the next free block
+						// get the next free block
 						short newBlock = (short)superblock.getFreeBlock();
+						
 						theBlock = newBlock;
 						
 						//put the block in the inode
@@ -214,6 +216,7 @@ public class FileSystem {
 					
 					//create a buffer
 					byte[] aBlock = new byte[512];
+					SysLib.rawread(theBlock, aBlock);
 					
 					//decide where to start writing
 					int startPoint = ftEnt.seekPtr % 512;
@@ -232,7 +235,9 @@ public class FileSystem {
 					
 					//write to block
 					if(debug) System.err.println("**** FileSystem write: before rawwrite: theBlock: " + theBlock);
-					if(debug) System.err.println("**** FileSystem write: first few values of aBlock just before we write to it: " + aBlock[0] + ", " + aBlock[1] + ", " + aBlock[2]);
+					// if(debug) System.err.println("**** FileSystem write: first few values of aBlock just before we write to it: " + aBlock[0] + ", " + aBlock[1] + ", " + aBlock[2]);
+					
+					//write the block to the disk at theBlock block index
 					SysLib.rawwrite(theBlock, aBlock);
 					ftEnt.seekPtr += bytesWritten;
 					written += bytesWritten;
@@ -269,12 +274,38 @@ public class FileSystem {
 	}
 	
 	private boolean deallocAllBlocks( FileTableEntry ftEnt ) {
-		if(ftEnt.inode.count != 1){
+		/*if(ftEnt.inode.count != 1){
 			//if files reference this inode
 			return false;
 		}else{
 			return true;
+		}*/
+		
+		if(ftEnt != null)	// error checking
+		{
+			ftEnt.seekPtr = 0;
+			for(int i = 0; i < ftEnt.inode.direct.length; i++)
+			{
+				// enqueue ftEnt's direct's to end of free list
+				superblock.returnBlock(ftEnt.inode.direct[i]);
+			}
+			// deallocate initializing all inode associations to 0
+			ftEnt.inode.length = 0;
+			ftEnt.inode.count = 0;
+			ftEnt.inode.flag = 0;
+
+			// set all direct pointers to zero (direct size is 11)
+			for(int i = 0; i < 11; i++)
+			{
+				ftEnt.inode.direct[i] = 0;
+			}
+			return true;
 		}
+		else	// null error
+		{
+			return false;
+		}
+		
 	}
 	
 	/*
