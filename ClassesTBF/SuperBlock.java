@@ -68,7 +68,7 @@ public class SuperBlock {
 		}
 		
 		//free blocks
-		for(short i = firstFreeBlock; i < files; i++){
+		for(short i = firstFreeBlock; i < totalBlocks; i++){
 			
 			//create an empty block
 			byte[] data = new byte[512];
@@ -104,6 +104,8 @@ public class SuperBlock {
 	}
 	
 	int getFreeBlock() {
+		
+		// if(debug) System.err.println("**** SuperBlock: getFreeBlock: totalBlocks: " + totalBlocks + " totalInodes: " + totalInodes);
 		
 		//get the head of the freelist
 		int diskBlock = freeList;

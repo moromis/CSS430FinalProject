@@ -180,18 +180,22 @@ public class Directory {
 
       //loop over the entire array of filenames
       for (short i = 0; i < maxInumber; i++) {
-         for (short j = 0; j < filename.length(); j++) {
+		  
+		 if(fsize[i] != 0){ 
+			 for (short j = 0; j < filename.length(); j++) {
 
-            //if the characters are not the same, skip this row
-            if (charFilename[j] != fnames[i][j]) {
-               found = false;
-               break;
+				//if the characters are not the same, skip this row
+				if (charFilename[j] != fnames[i][j]) {
+				   found = false;
+				   break;
 
-            } else { //the characters are the same so possibly a match
+				} else { //the characters are the same so possibly a match
 
-               found = true;
-            }
-         }
+				   found = true;
+				}
+			 }
+		 
+		 }
          
          //found the filename so return the inode number
          if (found) {
