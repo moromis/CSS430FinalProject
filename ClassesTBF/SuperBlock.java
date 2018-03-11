@@ -1,11 +1,13 @@
-/**SuperBlock.java
+/*CSS 430 Operating Systems Final Project
 
+Description:
 This file creates a superblock that details the file format of
 the disk in ThreadOS
 
 @author Daniel Grimm
+@author Kevin Ulrich
 @author Preston Mar
-@author Kevin Ulrich*/
+*/
 
 public class SuperBlock {
 
@@ -13,11 +15,8 @@ public class SuperBlock {
 	public int totalBlocks;
 	public int totalInodes;
 	public int freeList;
-	private boolean debug;
 	
-	public SuperBlock( int diskSize, boolean dbg ) {
-		
-		debug = dbg;
+	public SuperBlock( int diskSize ) {
 		
 		//read the superblock from disk
 		byte[] superBlock = new byte[Disk.blockSize];
@@ -28,7 +27,6 @@ public class SuperBlock {
 		
 		if( totalBlocks == diskSize && totalInodes > 0 && freeList >= 2 ) {
 			// disk contents are valid
-			if(debug) System.err.println("superblock is all good! no formatting needed!");
 			return;
 		} else {
 			//need to format disk
@@ -105,12 +103,8 @@ public class SuperBlock {
 	
 	int getFreeBlock() {
 		
-		// if(debug) System.err.println("**** SuperBlock: getFreeBlock: totalBlocks: " + totalBlocks + " totalInodes: " + totalInodes);
-		
 		//get the head of the freelist
 		int diskBlock = freeList;
-		
-		if(debug) System.err.println("**** SuperBlock: getFreeBlock: freelist was: " + freeList);
 		
         if(diskBlock != -1) {
 			
@@ -125,22 +119,11 @@ public class SuperBlock {
             freeList = (int) SysLib.bytes2short(block, 0);
         }
 		
-		if(debug) System.err.println("**** SuperBlock: getFreeBlock: freelist is now: " + freeList);
-		if(debug) System.err.println("**** SuperBlock: getFreeBlock: returning: " + diskBlock);
-		
-		
         return diskBlock;
-		
-		//return the first free block
-		// int blockToReturn = freeList;
-		// freeList++;
-		// return blockToReturn;
 		
 	}
 	
 	boolean returnBlock( int blockNumber ) {
-		
-		if(debug) System.err.println("**** SuperBlock: returnBlock: initially freeList: " + freeList);
 		
 		if(blockNumber >= 0 && blockNumber < totalBlocks){
 			

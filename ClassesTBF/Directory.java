@@ -1,10 +1,12 @@
-/**Directory.java
+/*CSS 430 Operating Systems Final Project
 
+Description:
 This class handles the directory system for ThreadOS.
 
 @author Daniel Grimm
 @author Kevin Ulrich
-@author Preston Mar*/
+@author Preston Mar
+*/
 
 public class Directory {
 	
@@ -16,13 +18,8 @@ public class Directory {
    private int maxInumber = 0;
    private int fileCounter = 0;
    private FileTable ft;
-   private boolean debug;
 
-	public Directory( int maxInum, boolean dbg ) { // directory constructor
-
-		debug = dbg;
-	
-		if(debug) System.err.println("Directory: maxInumber received: " + maxInum);
+	public Directory( int maxInum ) { // directory constructor
    
 		maxInumber = maxInum;
    
@@ -37,8 +34,6 @@ public class Directory {
 		root.getChars( 0, fsize[0], fnames[0], 0 ); // fnames[0] includes "/"
 	  
 		fileCounter++;
-
-		// ft = new FileTable(this);
 	}
 
    /** This method reads in a byte array of data from the disk
@@ -46,15 +41,6 @@ public class Directory {
    @param data : The directory from the disk.
    @return void*/
    public void bytes2directory( byte[] data ) {
-      // assumes data[] received directory information from disk
-      // initializes the Directory instance with this data[]
-	  
-	  //use SysLib.bytes2int and using the format created in directory2bytes
-	  //read in fsize, fnames, and fileCounter
-
-      /*Daniel's comments:
-      Going to assume that data is separated by maxInumber and maxChars and that all file sizes come
-      before the file names.*/
 
       //retrieves all of the file sizes
       for (int i = 0; i < maxInumber; i++) {
@@ -76,18 +62,6 @@ public class Directory {
    stored on the disk.
    @return byte[] : The directory as stored in a byte array.*/
    public byte[] directory2bytes( ) {
-      // converts and return Directory information into a plain byte array
-      // this byte array will be written back to disk
-      // note: only meaningfull directory information should be converted
-      // into bytes.
-	  
-	  //called by filesystem - likely in sync
-	  
-	  //use SysLib.int2bytes and store fsize, fnames, and fileCounter in a byte array, and then return that array
-
-      /*Daniel's comments:
-      Going to assume that data will be separated by maxInumber and maxChars and that all the file sizes come before
-      the file name.*/
 
       byte data[] = new byte[((maxInumber * 4) + (maxInumber * maxChars) + 4)];
 
@@ -125,39 +99,14 @@ public class Directory {
 		Inode newInode = new Inode(inodeNum);
 		newInode.flag = 1;
 		newInode.toDisk(inodeNum);
-		
-
-		// FileTableEntry fte = new FileTableEntry(newInode, newInode.getIndexBlockNumber(), filename);
 
 		return inodeNum;
-
-		//TODO: allocate an inode number? how to do?
-		//from slides: create new inode: check if there's a free inode and assign it to the file,
-		//return inode number, otherwise return error (-1)
 	}
 
    /** This method frees up an inode using the supplied inode number.
    @param iNumber : The inode number to be freed up.
    @return boolean : False if the operation was not successful, otherwise true.*/
    public boolean ifree( short iNumber ) {
-	   
-      // deallocates this inumber (inode number)
-      // the corresponding file will be deleted.
-	  
-	  // if(iNumber <= 2 || iNumber > maxInumber) return false; //invalid delete
-
-     // clear the fnames of the file name characters
-     // for (int i = 0; i < maxChars; i++) {
-         // fnames[iNumber] = null;
-     // }
-
-     // one less file now
-     // fileCounter--;
-
-     // nothing there so size of zero
-     // fsize[iNumber] = 0;
-
-     // return true;
 	 
         if(fsize[iNumber] > 0) {
 			
@@ -176,10 +125,8 @@ public class Directory {
 	   
 	   
       if (filename.length() > maxChars) {
-		  if(debug) System.err.println("**** Directory namei: ERROR: filename too long");
          return -1;
       }
-      // returns the inumber corresponding to this filename
 	  
       //get the filname as an array of characters
       //assumes that file names are very different from each other
@@ -208,9 +155,6 @@ public class Directory {
          
          //found the filename so return the inode number
          if (found) {
-            // index = (short) (i);
-			
-			 if(debug) System.err.println("**** Directory namei: returning inode num: " + index);
             return (short)index;
          }
 
@@ -219,8 +163,6 @@ public class Directory {
       }
 
 	  //return -1 if no inode is associated with the filename - can happen
-	  
-	  if(debug) System.err.println("**** Directory namei: ERROR: couldn't find inode with filename");
       return -1;
    }
 }

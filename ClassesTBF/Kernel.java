@@ -64,9 +64,6 @@ public class Kernel
 
    private final static int COND_DISK_REQ = 1; // wait condition 
    private final static int COND_DISK_FIN = 2; // wait condition
-   
-   //DEBUG
-   private final static boolean DEBUG = false;
 
    // Standard input
    private static BufferedReader input
@@ -94,7 +91,7 @@ public class Kernel
                   ioQueue = new SyncQueue( );
                   waitQueue = new SyncQueue( scheduler.getMaxThreads( ) );
 				  
-				  fs = new FileSystem( diskBlocks, DEBUG );
+				  fs = new FileSystem( diskBlocks );
 				  
                   return OK;
 				  
@@ -219,12 +216,10 @@ public class Kernel
 			   
 					if( ( myTcb = scheduler.getMyTcb() ) != null ) {
 						String[] s = (String[])args;
-						if(DEBUG) System.err.println("**** Kernel OPEN: " + s[0] + " " + s[1]);
 						FileTableEntry ent = fs.open( s[0], s[1] );
 						int fd = myTcb.getFd( ent );
 						return fd;
 					} else{
-						if(DEBUG) System.err.println("**** error in Kernel OPEN");
 						return ERROR;
 					}
 					
@@ -275,17 +270,12 @@ public class Kernel
                   //Get the TCB
                   if ( (myTcb = scheduler.getMyTcb() ) != null ) {
 					  
-					   if(DEBUG) System.err.println("**** Kernel READBUF: TCB  is good");
-					  
                      FileTableEntry ftEnt = myTcb.getFtEnt(param);//get the FTE
-					 
-					 if(DEBUG) System.err.println("**** Kernel READBUF: filetableentry: " + ftEnt);
 					 
                      if ( ftEnt != null )
                         return fs.read(ftEnt, (byte[]) args);//Return the result
                   }
-
-				  if(DEBUG) System.err.println("**** Kernel READBUF: ERROR (TCB == null)");
+				  
                   return ERROR;//return error
 
                case WRITEBUF: //to be implemented in project
@@ -293,17 +283,12 @@ public class Kernel
                   //Get the TCB
                   if ( (myTcb = scheduler.getMyTcb()) != null) {
 					  
-					  if(DEBUG) System.err.println("**** Kernel WRITEBUF: TCB  is good");
-					  
                      FileTableEntry ftEnt = myTcb.getFtEnt(param);//get the FTE
-					 
-					 if(DEBUG) System.err.println("**** Kernel WRITEBUF: filetableentry: " + ftEnt);
 					 
                      if (ftEnt != null)//write if not null
                         return fs.write(ftEnt, (byte[]) args);//return the number of bytes
                   }
-
-				  if(DEBUG) System.err.println("**** Kernel WRITEBUF: ERROR (TCB == null)");
+				  
                   return ERROR;//return error
 				   
             }
