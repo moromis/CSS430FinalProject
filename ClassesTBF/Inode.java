@@ -5,7 +5,7 @@ public class Inode {
    public int length;                             // file size in bytes
    public short count;                            // # file-table entries pointing to this
    
-   private final static boolean debug = true;
+   private final static boolean debug = false;
    
    public short flag;                             
    // 0 = unused, 1 = used, 2 = read, 3 = write, 4 = to be deleted
@@ -120,7 +120,7 @@ public class Inode {
 	   
    }
    
-   boolean setIndexBlock( short indexBlockNumber ) {
+   int setIndexBlock( short indexBlockNumber ) {
 		
 		if(debug) System.err.println("**** Inode: setIndexBlock: setting: " + indexBlockNumber);
 		
@@ -129,15 +129,15 @@ public class Inode {
 			if(direct[i] == -1){
 				direct[i] = indexBlockNumber;
 				
-				if(debug){ 
-					System.err.println("**** Inode: setIndexBlock:");
-					for(int j = 0; j < directSize; j++){
-						System.err.println("direct[" + j + "]: " + direct[j]);
-					}
-				}
+				// if(debug){ 
+					// System.err.println("**** Inode: setIndexBlock:");
+					// for(int j = 0; j < directSize; j++){
+						// System.err.println("direct[" + j + "]: " + direct[j]);
+					// }
+				// }
 					
 				
-				return true;
+				return 1;
 			}
 		}
 		
@@ -154,13 +154,15 @@ public class Inode {
 			SysLib.rawread( indirect, data );
 			
 			//go through the indirect block
-			for(int i = 0; i < Disk.blockSize; i += 2){
+			for(int i = 2; i < Disk.blockSize; i += 2){
 
 				//get the ith short from the block that we've stored in data
 				short s = SysLib.bytes2short( data, i );
 				
 				//if we find a free location to put the block, place it there
-				if(data[i] == 0){
+				if(s == 0){
+					
+					if(debug) System.err.println("**** Inode: setIndexBlock: setting indirect block index " + i + " to: " + indexBlockNumber);
 
 					//convert it to bytes and put it in the data block
 					SysLib.short2bytes( indexBlockNumber, data, i );
@@ -169,20 +171,22 @@ public class Inode {
 					SysLib.rawwrite( indirect, data );
 
 					//return true to say that we were able to write the block
-					return true;
+					return 1;
 				}
 			}
 			
 		}else{
 			
+			if(debug) System.err.println("**** Inode: setIndexBlock: setting indirect pointer to: " + indexBlockNumber);
+			
 			//otherwise just set the indirect pointer
 			indirect = indexBlockNumber;
-			return true;
+			return -2;
 			
 		}
 		
 		//if we get here then this whole inode is full
-		return false;
+		return -1;
 		
    }
    
@@ -190,7 +194,7 @@ public class Inode {
 		
 		//translate the offset into a block number
 		int index = (int)Math.floor(offset / Disk.blockSize);
-		if(debug) System.err.println("Inode: findTargetBlock: offset: " + offset + " block index: " + index);
+		if(debug) System.err.println("**** Inode: findTargetBlock: offset: " + offset + " block index: " + index);
 		
 		//find the corresponding block using the index
 		if(index >= 0){
@@ -198,24 +202,24 @@ public class Inode {
 			//if the index is a direct block...
 			if(index < directSize){
 				
-				if(debug) System.err.println("Inode: findTargetBlock: direct block was requested");
+				if(debug) System.err.println("**** Inode: findTargetBlock: direct block was requested");
 				
 				if(direct[index] != -1){
 					
-					if(debug){ 
-						System.err.println("Inode: findTargetBlock: direct[index] != -1, going to return: " + direct[index]);
+					// if(debug){ 
+						// System.err.println("Inode: findTargetBlock: direct[index] != -1, going to return: " + direct[index]);
 						
-						for(int i = 0; i < directSize; i++){
-							System.err.println("direct[" + i + "]: " + direct[i]);
-						}
-					}
+						// for(int i = 0; i < directSize; i++){
+							// System.err.println("direct[" + i + "]: " + direct[i]);
+						// }
+					// }
 					
 					//return the block
 					return direct[index];
 					
 				}else{
 					
-					if(debug) System.err.println("Inode: findTargetBlock: ERROR: direct[index] was 0");
+					if(debug) System.err.println("**** Inode: findTargetBlock: ERROR: direct[index] was -1");
 					
 					//if the direct block is unallocated return -1
 					return -1;
@@ -225,14 +229,15 @@ public class Inode {
 			//otherwise if the index is an indirect block	
 			}else if(index >= directSize && index < 256 + directSize){
 				
-				if(debug) System.err.println("Inode: findTargetBlock: block index: " + index + " appears to be an indirect block");
+				if(debug) System.err.println("**** Inode: findTargetBlock: block index: " + index + " appears to be an indirect block");
 				
 				//remove 11 from the block index - for instance if we're trying
 				//to find block index 12 (the 13th block), then really it's block index 1
-				//in the indirect pointer block
-				index -= directSize;
+				//in the indirect pointer block - then add one since the 0th short is the pointer to
+				//the next free block
+				index = index - directSize;
 				
-				if(debug) System.err.println("Inode: findTargetBlock: after adjusting for direct blocks, index = " + index);
+				if(debug) System.err.println("**** Inode: findTargetBlock: after adjusting for direct blocks, index = " + index);
 				
 				if(indirect != -1){
 					
@@ -241,7 +246,7 @@ public class Inode {
 					SysLib.rawread( indirect, data );
 					short targetBlock = SysLib.bytes2short(data, index * 2);
 					
-					if(debug) System.err.println("Inode: findTargetBlock: indirect pointer exists, targetBlock: " + targetBlock);
+					if(debug) System.err.println("**** Inode: findTargetBlock: indirect pointer exists, targetBlock: " + targetBlock);
 					
 					//return the correct block if it's been filled
 					if(targetBlock != -1){

@@ -66,7 +66,7 @@ public class Kernel
    private final static int COND_DISK_FIN = 2; // wait condition
    
    //DEBUG
-   private final static boolean DEBUG = true;
+   private final static boolean DEBUG = false;
 
    // Standard input
    private static BufferedReader input

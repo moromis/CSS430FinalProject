@@ -109,7 +109,7 @@ public class FileSystem {
 			
 			if(debug) System.err.println("**** FileSystem read: beginning: seekPtr: " + ftEnt.seekPtr + " readin: " + readin + " buflen: " + buflen);
 			
-			System.err.println("**** FileSystem read: beginning: fsize of ftEnt: " + fsize(ftEnt));
+			if(debug) System.err.println("**** FileSystem read: beginning: fsize of ftEnt: " + fsize(ftEnt));
 
 			synchronized(ftEnt){
 				while(buflen > 0 && ftEnt.seekPtr < fsize(ftEnt)){
@@ -178,6 +178,7 @@ public class FileSystem {
 			return -1;
 			
 		}		
+		
 	}
 	
 	/*
@@ -200,16 +201,34 @@ public class FileSystem {
 					//figure out what block to write to in the inode based on the seek pointer
 					int theBlock = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
 					
+					if(debug) System.err.println("**** FileSystem write: before checking theBlock == -1");
+					
 					// if block does not exist, create it
 					if(theBlock == -1){
+						
+						if(debug) System.err.println("**** FileSystem write: theBlock WAS -1!");
 						
 						// get the next free block
 						short newBlock = (short)superblock.getFreeBlock();
 						
-						theBlock = newBlock;
 						
 						//put the block in the inode
-						ftEnt.inode.setIndexBlock(newBlock);
+						if(ftEnt.inode.setIndexBlock(newBlock) == -2){ //if we get -2 back then we only assigned the indirect block, need to give another block to the inode
+							
+							if(debug) System.err.println("**** FileSystem write: indirect block was just set to: " + newBlock);
+						
+							newBlock = (short)superblock.getFreeBlock();
+							
+							if(debug) System.err.println("**** FileSystem write: got a new block for the actual indirect block: " + newBlock);
+							
+							if(ftEnt.inode.setIndexBlock(newBlock) == -1)
+								return -1;
+								
+								
+						}
+							
+						theBlock = newBlock;
+						if(debug) System.err.println("**** FileSystem write: theBlock: " + theBlock);
 					}
 					
 					if(debug) System.err.println("**** FileSystem write: block: " + theBlock + " given seekPtr: " + ftEnt.seekPtr);
@@ -281,29 +300,33 @@ public class FileSystem {
 			return true;
 		}*/
 		
-		if(ftEnt != null)	// error checking
-		{
+		if(ftEnt != null){
+			
 			ftEnt.seekPtr = 0;
-			for(int i = 0; i < ftEnt.inode.direct.length; i++)
-			{
+			for(int i = 0; i < ftEnt.inode.direct.length; i++){
+				
 				// enqueue ftEnt's direct's to end of free list
 				superblock.returnBlock(ftEnt.inode.direct[i]);
+				
 			}
+			
 			// deallocate initializing all inode associations to 0
 			ftEnt.inode.length = 0;
 			ftEnt.inode.count = 0;
 			ftEnt.inode.flag = 0;
 
-			// set all direct pointers to zero (direct size is 11)
-			for(int i = 0; i < 11; i++)
-			{
-				ftEnt.inode.direct[i] = 0;
+			for(int i = 0; i < 11; i++){
+				
+				ftEnt.inode.direct[i] = -1;
+				
 			}
+			
 			return true;
 		}
-		else	// null error
-		{
+		else{
+			
 			return false;
+			
 		}
 		
 	}

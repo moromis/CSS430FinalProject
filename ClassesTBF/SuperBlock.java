@@ -108,7 +108,7 @@ public class SuperBlock {
 		//get the head of the freelist
 		int diskBlock = freeList;
 		
-		if(debug) System.err.println("SuperBlock: getFreeBlock: freelist was: " + freeList);
+		if(debug) System.err.println("**** SuperBlock: getFreeBlock: freelist was: " + freeList);
 		
         if(diskBlock != -1) {
 			
@@ -123,8 +123,8 @@ public class SuperBlock {
             freeList = (int) SysLib.bytes2short(block, 0);
         }
 		
-		if(debug) System.err.println("SuperBlock: getFreeBlock: freelist is now: " + freeList);
-		if(debug) System.err.println("SuperBlock: getFreeBlock: returning: " + diskBlock);
+		if(debug) System.err.println("**** SuperBlock: getFreeBlock: freelist is now: " + freeList);
+		if(debug) System.err.println("**** SuperBlock: getFreeBlock: returning: " + diskBlock);
 		
 		
         return diskBlock;
@@ -138,7 +138,7 @@ public class SuperBlock {
 	
 	boolean returnBlock( int blockNumber ) {
 		
-		if(debug) System.err.println("SuperBlock: returnBlock: initially freeList: " + freeList);
+		if(debug) System.err.println("**** SuperBlock: returnBlock: initially freeList: " + freeList);
 		
 		if(blockNumber >= 0 && blockNumber < totalBlocks){
 			

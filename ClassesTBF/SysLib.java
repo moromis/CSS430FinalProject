@@ -1,6 +1,9 @@
 import java.util.*;
 
 public class SysLib {
+	
+	public static final boolean debug = false;
+	
     public static int exec( String args[] ) {
         return Kernel.interrupt( Kernel.INTERRUPT_SOFTWARE,
 				 Kernel.EXEC, 0, args );
@@ -149,7 +152,7 @@ public class SysLib {
         //List the arguments as an array
         String[] args = {fileName, mode};
 		
-		System.err.println("\n**** SysLib open: " + args[0] + " " + args[1]);
+		if(debug) System.err.println("\n**** SysLib open: " + args[0] + " " + args[1]);
 
         return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.OPEN, 0, args);
     }
@@ -165,7 +168,7 @@ public class SysLib {
             return -1;
         }
 		
-		System.err.println("\n**** SysLib read: fd: " + fd);
+		if(debug) System.err.println("\n**** SysLib read: fd: " + fd);
 		
         return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.READBUF, fd, buffer);
     }
@@ -181,7 +184,7 @@ public class SysLib {
             return -1;
         }
 
-		System.err.println("\n**** SysLib write: fd: " + fd);
+		if(debug) System.err.println("\n**** SysLib write: fd: " + fd);
 		
         return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, Kernel.WRITEBUF, fd, buffer);
     }
